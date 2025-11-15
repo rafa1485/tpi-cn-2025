@@ -147,16 +147,25 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
     // con las temperaturas para cada tiempo en SEGUNDOS que se guarda en 
     // el vector 't'
     
+        t_actual= t(i);
+        T_actual= T(i);
+        dT= f(t_actual, T_actual, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref);
+        t_nuevo = t_actual + Dt;
+        T_nueva = T_actual + dT * Dt;
+        
+        T= [T, T_nueva];
+        t= [t, t_nuevo];
+    
     end
     
     
     // CALCULO DEL PERFIL DE CALOR DE CALEFACCION Y REFRIGERACION
-    Qc = [Q_calef(0)]
-    Qr = [Q_refri(0)]
+    Qc = [Q_calef(0, hr_ini_cal, hr_cal)]
+    Qr = [abs(Q_refri(0, hr_ini_ref, hr_ref))]   // necesito valores positivos para poder calcular los costos
     
     for i=1:N,
         Qc = [Qc, Q_calef(t(i), hr_ini_cal, hr_cal)];
-        Qr = [Qr, Q_refri(t(i), hr_ini_ref, hr_ref)]
+        Qr = [Qr,abs(Q_refri(t(i), hr_ini_ref, hr_ref))]
     end
 
     
@@ -210,6 +219,14 @@ function temperatura = funcion_perfil_temperatura(X)
     // con las temperaturas para cada tiempo en SEGUNDOS que se guarda en 
     // el vector 't'
     
+        t_actual= t(i);
+        T_actual= T(i);
+        dT= f(t_actual, T_actual, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref);
+        t_nuevo = t_actual + Dt;
+        T_nueva = T_actual + dT * Dt;
+
+        T= [T, T_nueva];
+        t= [t, t_nuevo]; 
     end
     
     temperatura = T
