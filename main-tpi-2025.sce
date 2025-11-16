@@ -43,12 +43,12 @@ potenciaCalefaccion = potenciaCalefaccionUnitaria * superficiePiso // [W]
 precioEnergiaCalefaccion = 0.0000139 // [dólares/Wh]
 
 // CALCULO DEL COSTO DE LA ENERGIA DE CALEFACCION
-//poderCalorificoGas = 10.8 //[kWh/m3]
-//precioM3Gas = 180 // [$/m3]
-//precio_energia_Gas_Pesos_kWh = precioM3Gas / poderCalorificoGas / 0.8 // Considerando un rendimiento termico de 0.8
-//precioDolar_Pesos = 1500 
-//precio_energia_Gas_USD_kWh = precio_energia_Gas_Pesos_kWh / precioDolar_Pesos
-//precio_energia_Gas_USD_Wh = precio_energia_Gas_USD_kWh / 1000
+poderCalorificoGas = 10.8 //[kWh/m3]
+precioM3Gas = 180 // [$/m3]
+precio_energia_Gas_Pesos_kWh = precioM3Gas / poderCalorificoGas / 0.8 // Considerando un rendimiento termico de 0.8
+precioDolar_Pesos = 1500 
+precio_energia_Gas_USD_kWh = precio_energia_Gas_Pesos_kWh / precioDolar_Pesos
+precio_energia_Gas_USD_Wh = precio_energia_Gas_USD_kWh / 1000
 
 potenciaRefrigeracionUnitaria = 3 // Potencia de refrigeración por metro cuadrado de superficie construida [W/m2]
 potenciaRefrigeracion = potenciaRefrigeracionUnitaria * superficiePiso // [W]
@@ -121,6 +121,39 @@ function dT = f(t,T_int, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref)
     dT = Q_total(t,T_int, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref) / capacidadCalorificaEdificio;
 endfunction
 
+
+function integral = funcion_integral(t, Q)
+    // Integración numérica usando Regla de Simpson 1/3 (igual a tu ejemplo)
+    N = length(t) - 1  // Numero de intervalos
+    h = (t($) - t(1)) / N
+    
+    // Crear vector de coeficientes IDÉNTICO a tu ejemplo
+    Vector_Coeficientes = []
+    for n = 0:N
+        if modulo(n+1, 2) == 0 then
+            EsImpar = 1
+        else
+            EsImpar = 0
+        end
+        
+        if n == 0 then
+            coef = 1
+            Vector_Coeficientes = [Vector_Coeficientes, coef]
+        elseif (n >= 1) & (n <= N-1) & (EsImpar == 1) then
+            coef = 4
+            Vector_Coeficientes = [Vector_Coeficientes, coef]
+        elseif (n >= 2) & (n <= N-2) & (EsImpar == 0) then
+            coef = 2
+            Vector_Coeficientes = [Vector_Coeficientes, coef]
+        else
+            coef = 1
+            Vector_Coeficientes = [Vector_Coeficientes, coef]
+        end
+    end
+    
+    integral = h/3 * sum(Q .* Vector_Coeficientes)
+endfunction
+
 // TRUE o FALSE para mostra un graficxo sino solo el costo
 function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
 
@@ -171,14 +204,13 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
 
     
     // INTEGRACION DE LA ENERGIA DE CALEFACCION A LO LARGO DEL DIA (JOULES). Cualquiera de los dias. 
-    energiaCalefaccionDiaria = 0
+    energiaCalefaccionDiaria = funcion_integral(t,Qc) //[Joules]
     // Programar una funcion_integral(t,Qc), que calcule la Energía total 
     // de Calefacción mediente la integral de Qc en funcion de t // [Joules]
     
     
     // INTEGRACION DE LA ENERGIA DE REFRIGERACION A LO LARGO DEL DIA (JOULES)
-    energiaRefrigeracionDiaria = 0 // [Joules]
-    // Programar una funcion_integral(t,Qr), que calcule la Energía total 
+    energiaRefrigeracionDiaria = funcion_integral(t,Qr) // [Joules]    // Programar una funcion_integral(t,Qr), que calcule la Energía total 
     // de Refrigeración mediente la integral de Qr en funcion de t // [Joules]
     
     energiaCalefaccionMensual_Wh = energiaCalefaccionDiaria * 30 / 3600
@@ -306,21 +338,18 @@ endfunction
 
 // GRADIENTE DESCENDENTE
 alpha = 0.01
-max_iter = 10
+max_iter = 100
 tol = 0.01
 
 X_opt = X
 
 printf("\n=== INICIANDO OPTIMIZACIÓN ===\n")
-//printf("Iteración 0: X = [%.2f, %.2f, %.2f, %.2f], fobj = %.4f\n", X_opt(1), X_opt(2), X_opt(3), X_opt(4), fobj(X_opt))
 
 for k = 1:max_iter
     // COMPLETAR EL METOD0 del GRADIENTE DESCENDENTE para minimizar 'fobj'   
     
     g = grad_f(X_opt)
     ng = norm(g)
-    
-    //printf("Iteración %d: X = [%.2f, %.2f, %.2f, %.2f], fobj = %.4f, ||grad|| = %.6f\n", k, X_opt(1), X_opt(2), X_opt(3), X_opt(4), fobj(X_opt), ng)
     
     if ng < tol then
         //printf("Convergencia alcanzada - ||grad|| < tol\n")
