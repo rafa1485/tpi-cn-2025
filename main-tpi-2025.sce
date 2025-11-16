@@ -262,21 +262,37 @@ function fcc = fobj(X)
 endfunction
 
 // DEFINICION DE DERIVADAS PARCIALES NUMERICAS
-
 function dfx1 = Dfx1(X)
     // Calcular derivada de fobj() en respecto de x1
+    h = 0.01 
+    X_plus = X
+    X_plus(1) = X(1) + h
+    dfx1 = (fobj(X_plus) - fobj(X)) / h
+
 endfunction
 
 function dfx2 = Dfx2(X)
     // Calcular derivada de fobj() en respecto de x2 
+    h = 0.01 
+    X_plus = X
+    X_plus(2) = X(2) + h
+    dfx2 = (fobj(X_plus) - fobj(X)) / h
 endfunction
 
 function dfx3 = Dfx3(X)
     // Calcular derivada de fobj() en respecto de x3 
+    h = 0.01 
+    X_plus = X
+    X_plus(3) = X(3) + h
+    dfx3 = (fobj(X_plus) - fobj(X)) / h
 endfunction
 
 function dfx4 = Dfx4(X)
     // Calcular derivada de fobj() en respecto de x4 
+    h = 0.01 
+    X_plus = X
+    X_plus(4) = X(4) + h
+    dfx4 = (fobj(X_plus) - fobj(X)) / h
 endfunction
 
 // DEFINICION DE LA FUNCIÓN GRADIENTE
@@ -288,20 +304,44 @@ function g = grad_f(X)
     g = [d1; d2; d3; d4]
 endfunction
 
-
-
 // GRADIENTE DESCENDENTE
 alpha = 0.01
-max_iter = 100
+max_iter = 10
 tol = 0.01
 
+X_opt = X
+
+printf("\n=== INICIANDO OPTIMIZACIÓN ===\n")
+//printf("Iteración 0: X = [%.2f, %.2f, %.2f, %.2f], fobj = %.4f\n", X_opt(1), X_opt(2), X_opt(3), X_opt(4), fobj(X_opt))
+
 for k = 1:max_iter
-    // COMPLETAR EL METOD0 del GRADIENTE DESCENDENTE para minimizar 'fobj'    
+    // COMPLETAR EL METOD0 del GRADIENTE DESCENDENTE para minimizar 'fobj'   
+    
+    g = grad_f(X_opt)
+    ng = norm(g)
+    
+    //printf("Iteración %d: X = [%.2f, %.2f, %.2f, %.2f], fobj = %.4f, ||grad|| = %.6f\n", k, X_opt(1), X_opt(2), X_opt(3), X_opt(4), fobj(X_opt), ng)
+    
+    if ng < tol then
+        //printf("Convergencia alcanzada - ||grad|| < tol\n")
+        break;
+    end
+
+    // Paso de l gradiente descendente
+    X_new = X_opt - alpha * g
+
+    X_new(1) = max(0,min(24, X_new(1))) // inicio Calefaccion
+    X_new(2) = max(0.1,min(24, X_new(2))) // fin calefaccion (minimo 0.1 para evitar division por 0)
+    X_new(3) = max(0,min(24, X_new(3))) // Inicio refrigeracion 
+    X_new(4) = max(0.1,min(24, X_new(4))) // finRefrigeracion (minimo 0.1)
+    
+
+    X_opt = X_new
 end
 
 // Presentar nueva solución
-
-
+X = X_opt;
 printf("\nMinimo aproximado en X = [%f, %f, %f, %f]\n", X(1), X(2), X(3), X(4));
+printf("Valor de fobj = %.4f\n", fobj(X));
 graficar = %T // %T : graficar , %F : NO graficar
 funcion_costo_climatizacion(X, graficar);
