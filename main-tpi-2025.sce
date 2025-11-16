@@ -121,7 +121,7 @@ function dT = f(t,T_int, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref)
     dT = Q_total(t,T_int, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref) / capacidadCalorificaEdificio;
 endfunction
 
-
+// TRUE o FALSE para mostra un graficxo sino solo el costo
 function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
 
     
@@ -138,7 +138,7 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
     T_ext = [T_exterior(0)]
     Dt = 36;
     t = [0]
-    N = (24 * 3600)/ Dt;
+    N = (24 * 3600)/ Dt; // está división de un entero
     
     
     for i=1:N,
@@ -146,7 +146,17 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
     // Al finalizar el METOD0 de Euler se debe tener un Vector FILA 'T'
     // con las temperaturas para cada tiempo en SEGUNDOS que se guarda en 
     // el vector 't'
-    
+        t_actual = t($)
+        T_actual = T($)
+        dT_dt = f(t_actual,T_actual,hr_ini_cal,hr_cal,hr_ini_ref,hr_ref)
+        
+        // Paso de Euler
+        T_nueva = T_actual + dT_dt * Dt
+        t_nueva = t_actual + Dt;
+        
+        // Actualizar vectores
+        T = [T,T_nueva]
+        t= [t,t_nueva]   
     end
     
     
@@ -160,7 +170,7 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
     end
 
     
-    // INTEGRACION DE LA ENERGIA DE CALEFACCION A LO LARGO DEL DIA (JOULES)
+    // INTEGRACION DE LA ENERGIA DE CALEFACCION A LO LARGO DEL DIA (JOULES). Cualquiera de los dias. 
     energiaCalefaccionDiaria = 0
     // Programar una funcion_integral(t,Qc), que calcule la Energía total 
     // de Calefacción mediente la integral de Qc en funcion de t // [Joules]
@@ -189,7 +199,7 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
 endfunction
 
 
-function temperatura = funcion_perfil_temperatura(X)
+function temperatura = funcion_perfil_temperatura(X) // hacer lo mismo, la temperatura a lo largo del dia. 
     // DEFINICION VARIABLES DE CONTROL TEMPERATURA
     hr_ini_cal = X(1)
     hr_cal = X(2)
@@ -209,6 +219,17 @@ function temperatura = funcion_perfil_temperatura(X)
     // Al finalizar el METOD0 de Euler se debe tener un Vector FILA 'T'
     // con las temperaturas para cada tiempo en SEGUNDOS que se guarda en 
     // el vector 't'
+        t_actual = t($)
+        T_actual = T($)
+        dT_dt = f(t_actual,T_actual,hr_ini_cal,hr_cal,hr_ini_ref,hr_ref)
+        
+        // Paso de Euler
+        T_nueva = T_actual + dT_dt * Dt
+        t_nueva = t_actual + Dt;
+        
+        // Actualizar vectores
+        T = [T,T_nueva]
+        t= [t,t_nueva]   
     
     end
     
