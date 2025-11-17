@@ -1,4 +1,4 @@
-```clear
+clear
 clc
 
 
@@ -291,4 +291,4 @@ end
 
 printf("\nMinimo aproximado en X = [%f, %f, %f, %f]\n", X(1), X(2), X(3), X(4));
 graficar = %T // %T : graficar , %F : NO graficar
-funcion_costo_climatizacion(X, graficar);```
+funcion_costo_climatizacion(X, graficar);
