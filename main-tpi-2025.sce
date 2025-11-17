@@ -142,11 +142,13 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
     
     
     for i=1:N,
-    // COMPLETAR METOD0 DE EULER
-    // Al finalizar el METOD0 de Euler se debe tener un Vector FILA 'T'
-    // con las temperaturas para cada tiempo en SEGUNDOS que se guarda en 
-    // el vector 't'
-    
+        t_actual = t(i)
+        T_actual = T(i)
+        dT = f(t_actual, T_actual, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref)
+        T_nueva = T_actual + dT * Dt
+        t_nuevo = t_actual + Dt
+        T = [T, T_nueva]
+        t = [t, t_nuevo]
     end
     
     
@@ -205,11 +207,13 @@ function temperatura = funcion_perfil_temperatura(X)
     N = (24 * 3600)/ Dt;
     
     for i=1:N,
-    // COMPLETAR METOD0 DE EULER
-    // Al finalizar el METOD0 de Euler se debe tener un Vector FILA 'T'
-    // con las temperaturas para cada tiempo en SEGUNDOS que se guarda en 
-    // el vector 't'
-    
+        t_actual = t(i)
+        T_actual = T(i)
+        dT = f(t_actual, T_actual, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref)
+        T_nueva = T_actual + dT * Dt
+        t_nuevo = t_actual + Dt
+        T = [T, T_nueva]
+        t = [t, t_nuevo]
     end
     
     temperatura = T
