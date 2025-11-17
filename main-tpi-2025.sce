@@ -1,6 +1,6 @@
-clear
+```clear
 clc
-// a ver si funciona el commit
+
 
 // DEFINICION PARA SALIDA GRAFICA
 function grafico_salida(t,T,Qc,Qr,costoRefrigeracion,costoCalefaccion)
@@ -146,7 +146,11 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
     // Al finalizar el METOD0 de Euler se debe tener un Vector FILA 'T'
     // con las temperaturas para cada tiempo en SEGUNDOS que se guarda en 
     // el vector 't'
-    
+        t_next = t(i) + Dt
+        T_next = T(i) + Dt * f(t(i), T(i), hr_ini_cal, hr_cal, hr_ini_ref, hr_ref)
+        
+        t = [t, t_next]
+        T = [T, T_next]
     end
     
     
@@ -209,6 +213,10 @@ function temperatura = funcion_perfil_temperatura(X)
     // Al finalizar el METOD0 de Euler se debe tener un Vector FILA 'T'
     // con las temperaturas para cada tiempo en SEGUNDOS que se guarda en 
     // el vector 't'
+        t_next = t(i) + Dt
+        T_next = T(i) + Dt * f(t(i), T(i), hr_ini_cal, hr_cal, hr_ini_ref, hr_ref)
+        T = [T, T_next]
+        t = [t, t_next]
     
     end
     
@@ -283,4 +291,4 @@ end
 
 printf("\nMinimo aproximado en X = [%f, %f, %f, %f]\n", X(1), X(2), X(3), X(4));
 graficar = %T // %T : graficar , %F : NO graficar
-funcion_costo_climatizacion(X, graficar);
+funcion_costo_climatizacion(X, graficar);```
