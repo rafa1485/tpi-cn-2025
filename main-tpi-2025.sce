@@ -1,6 +1,6 @@
 clear
 clc
-
+// a ver si funciona el commit
 
 // DEFINICION PARA SALIDA GRAFICA
 function grafico_salida(t,T,Qc,Qr,costoRefrigeracion,costoCalefaccion)
