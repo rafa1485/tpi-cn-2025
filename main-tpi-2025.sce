@@ -227,6 +227,24 @@ function temperatura = funcion_perfil_temperatura(X)
     // con las temperaturas para cada tiempo en SEGUNDOS que se guarda en 
     // el vector 't'
     
+        // Obtenemos el tiempo y la temperatura del paso anterior
+        t_anterior = t(i);
+        T_anterior = T(i);
+        
+        // Calculamos la derivada (el cambio de temperatura) en ese punto
+        // Usamos la función 'f' que ya está definida
+        dT = f(t_anterior, T_anterior, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref);
+        
+        // Calculamos la nueva temperatura
+        T_siguiente = T_anterior + dT * Dt;
+        
+        // Calculamos el nuevo tiempo
+        t_siguiente = t_anterior + Dt;
+        
+        // Añadimos los nuevos valores a los vectores
+        T = [T, T_siguiente];
+        t = [t, t_siguiente];
+    
     end
     
     temperatura = T
