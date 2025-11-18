@@ -269,18 +269,42 @@ endfunction
 
 function dfx1 = Dfx1(X)
     // Calcular derivada de fobj() en respecto de x1
+    h = 0.01 // Paso pequeño para la aproximación
+    X_plus = X
+    X_plus(1) = X(1) + h
+    X_minus = X
+    X_minus(1) = X(1) - h
+    dfx1 = (fobj(X_plus) - fobj(X_minus)) / (2 * h)
 endfunction
 
 function dfx2 = Dfx2(X)
     // Calcular derivada de fobj() en respecto de x2 
+    h = 0.01 // Paso pequeño para la aproximación
+    X_plus = X
+    X_plus(2) = X(2) + h
+    X_minus = X
+    X_minus(2) = X(2) - h
+    dfx2 = (fobj(X_plus) - fobj(X_minus)) / (2 * h)
 endfunction
 
 function dfx3 = Dfx3(X)
     // Calcular derivada de fobj() en respecto de x3 
+    h = 0.01 // Paso pequeño para la aproximación
+    X_plus = X
+    X_plus(3) = X(3) + h
+    X_minus = X
+    X_minus(3) = X(3) - h
+    dfx3 = (fobj(X_plus) - fobj(X_minus)) / (2 * h)
 endfunction
 
 function dfx4 = Dfx4(X)
     // Calcular derivada de fobj() en respecto de x4 
+    h = 0.01 // Paso pequeño para la aproximación
+    X_plus = X
+    X_plus(4) = X(4) + h
+    X_minus = X
+    X_minus(4) = X(4) - h
+    dfx4 = (fobj(X_plus) - fobj(X_minus)) / (2 * h)
 endfunction
 
 // DEFINICION DE LA FUNCIÓN GRADIENTE
@@ -300,7 +324,23 @@ max_iter = 100
 tol = 0.01
 
 for k = 1:max_iter
-    // COMPLETAR EL METOD0 del GRADIENTE DESCENDENTE para minimizar 'fobj'    
+    // COMPLETAR EL METOD0 del GRADIENTE DESCENDENTE para minimizar 'fobj'
+    gradiente = grad_f(X)
+    X_nuevo = X - alpha * gradiente
+    
+    // Verificar convergencia
+    norma_gradiente = sqrt(sum(gradiente.^2))
+    if norma_gradiente < tol then
+        printf("Convergencia alcanzada en la iteracion %d\n", k)
+        break
+    end
+    
+    X = X_nuevo
+    
+    // Opcional: mostrar progreso cada 10 iteraciones
+    if modulo(k, 10) == 0 then
+        printf("Iteracion %d: f(X) = %f, ||grad|| = %f\n", k, fobj(X), norma_gradiente)
+    end
 end
 
 // Presentar nueva solución
