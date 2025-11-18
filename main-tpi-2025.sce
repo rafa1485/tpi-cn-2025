@@ -121,6 +121,19 @@ function dT = f(t,T_int, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref)
     dT = Q_total(t,T_int, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref) / capacidadCalorificaEdificio;
 endfunction
 
+// FUNCION DE INTEGRACION NUMERICA (METODO DEL TRAPECIO)
+function integral = funcion_integral(t, y)
+    // t: vector de tiempos
+    // y: vector de valores a integrar (Qc o Qr)
+    // Retorna: integral usando el método del trapecio [Joules]
+    n = length(t)
+    integral = 0
+    for i = 1:(n-1)
+        dt = t(i+1) - t(i)
+        integral = integral + (y(i) + y(i+1)) * dt / 2
+    end
+endfunction
+
 
 function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
 
@@ -142,6 +155,10 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
     
     
     for i=1:N,
+    // COMPLETAR METOD0 DE EULER
+    // Al finalizar el METOD0 de Euler se debe tener un Vector FILA 'T'
+    // con las temperaturas para cada tiempo en SEGUNDOS que se guarda en 
+    // el vector 't'
         t_actual = t(i)
         T_actual = T(i)
         dT = f(t_actual, T_actual, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref)
@@ -163,15 +180,15 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
 
     
     // INTEGRACION DE LA ENERGIA DE CALEFACCION A LO LARGO DEL DIA (JOULES)
-    energiaCalefaccionDiaria = 0
     // Programar una funcion_integral(t,Qc), que calcule la Energía total 
     // de Calefacción mediente la integral de Qc en funcion de t // [Joules]
+    energiaCalefaccionDiaria = funcion_integral(t, Qc) // [Joules]
     
     
     // INTEGRACION DE LA ENERGIA DE REFRIGERACION A LO LARGO DEL DIA (JOULES)
-    energiaRefrigeracionDiaria = 0 // [Joules]
     // Programar una funcion_integral(t,Qr), que calcule la Energía total 
     // de Refrigeración mediente la integral de Qr en funcion de t // [Joules]
+    energiaRefrigeracionDiaria = funcion_integral(t, Qr) // [Joules]
     
     energiaCalefaccionMensual_Wh = energiaCalefaccionDiaria * 30 / 3600
     
@@ -207,6 +224,10 @@ function temperatura = funcion_perfil_temperatura(X)
     N = (24 * 3600)/ Dt;
     
     for i=1:N,
+    // COMPLETAR METOD0 DE EULER
+    // Al finalizar el METOD0 de Euler se debe tener un Vector FILA 'T'
+    // con las temperaturas para cada tiempo en SEGUNDOS que se guarda en 
+    // el vector 't'
         t_actual = t(i)
         T_actual = T(i)
         dT = f(t_actual, T_actual, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref)
