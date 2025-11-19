@@ -98,11 +98,10 @@ function Qc = Q_calef(t,hr_ini_cal,hr_cal)
 endfunction
 
 function Qr = Q_refri(t,hr_ini_ref,hr_ref)
+    // Potencia de refrigeración (negativa = extrae calor)
     hr_fin_ref = hr_ini_ref + hr_ref
-    if t <= hr_ini_ref*3600 then
-        Qr = 0;
-    elseif t <= hr_fin_ref*3600 then
-        Qr = potenciaRefrigeracion;
+    if t/3600 >= hr_ini_ref && t/3600 <= hr_fin_ref then
+        Qr = -potenciaRefrigeracion;
     else
         Qr = 0;
     end
