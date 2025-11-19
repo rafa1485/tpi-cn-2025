@@ -1,6 +1,8 @@
 clear
 clc
 
+// Integrantes: Alan Benner; Nicolas Prosman; Mayco Chavez
+
 
 // DEFINICION PARA SALIDA GRAFICA
 function grafico_salida(t,T,Qc,Qr,costoRefrigeracion,costoCalefaccion)
