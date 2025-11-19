@@ -9,10 +9,10 @@ function grafico_salida(t,T,Qc,Qr,costoRefrigeracion,costoCalefaccion)
     plot(t/3600,T)
     
     subplot(4,1,2)
-    plot(Qc,'r')
+    plot(t/3600, Qc,'r')
     
     subplot(4,1,3)
-    plot(Qr,'b')
+    plot(t/3600, Qr,'b')
     
     subplot(4,1,4)
     xstring(0.1,0.33,"Costo Refrigeración= U$D"+string(costoRefrigeracion),0,0)
@@ -40,7 +40,7 @@ conductanciaPiso = superficiePiso*coeficienteConductanciaPiso // [W/K]
 
 potenciaCalefaccionUnitaria = 10 // Potencia de calefacción por metro cuadrado de superficie construida [W/m2]
 potenciaCalefaccion = potenciaCalefaccionUnitaria * superficiePiso // [W]
-precioEnergiaCalefaccion = 0.0000139 // [dólares/Wh]
+precioEnergiaCalefaccion = 0.045/1000 // [dólares/Wh]
 
 // CALCULO DEL COSTO DE LA ENERGIA DE CALEFACCION
 //poderCalorificoGas = 10.8 //[kWh/m3]
@@ -50,7 +50,7 @@ precioEnergiaCalefaccion = 0.0000139 // [dólares/Wh]
 //precio_energia_Gas_USD_kWh = precio_energia_Gas_Pesos_kWh / precioDolar_Pesos
 //precio_energia_Gas_USD_Wh = precio_energia_Gas_USD_kWh / 1000
 
-potenciaRefrigeracionUnitaria = 3 // Potencia de refrigeración por metro cuadrado de superficie construida [W/m2]
+potenciaRefrigeracionUnitaria = 5 // Potencia de refrigeración por metro cuadrado de superficie construida [W/m2]
 potenciaRefrigeracion = potenciaRefrigeracionUnitaria * superficiePiso // [W]
 precioEnergiaRefrigeracion = 0.12/1000 // [dólares/Wh]
 
@@ -90,10 +90,10 @@ endfunction
 
 function Qc = Q_calef(t,hr_ini_cal,hr_cal)
     hr_fin_cal = hr_ini_cal + hr_cal
-    if (t/3600) >= hr_fin_cal && (t/3600) <= hr_ini_cal then
-        Qc = 0;
-    else
+    if (t/3600) >= hr_ini_cal && (t/3600) <= hr_fin_cal then
         Qc = potenciaCalefaccion;
+    else
+        Qc = 0;
     end
 endfunction
 
