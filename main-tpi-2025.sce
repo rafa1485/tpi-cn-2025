@@ -42,17 +42,9 @@ conductanciaPiso = superficiePiso*coeficienteConductanciaPiso // [W/K]
 
 potenciaCalefaccionUnitaria = 10 // Potencia de calefacción por metro cuadrado de superficie construida [W/m2]
 potenciaCalefaccion = potenciaCalefaccionUnitaria * superficiePiso // [W]
-precioEnergiaCalefaccion = 0.0000139 // [dólares/Wh]
+precioEnergiaCalefaccion = 0.045/1000 // [dólares/Wh] - CORREGIDO según PDF
 
-// CALCULO DEL COSTO DE LA ENERGIA DE CALEFACCION
-//poderCalorificoGas = 10.8 //[kWh/m3]
-//precioM3Gas = 180 // [$/m3]
-//precio_energia_Gas_Pesos_kWh = precioM3Gas / poderCalorificoGas / 0.8 // Considerando un rendimiento termico de 0.8
-//precioDolar_Pesos = 1500 
-//precio_energia_Gas_USD_kWh = precio_energia_Gas_Pesos_kWh / precioDolar_Pesos
-//precio_energia_Gas_USD_Wh = precio_energia_Gas_USD_kWh / 1000
-
-potenciaRefrigeracionUnitaria = 3 // Potencia de refrigeración por metro cuadrado de superficie construida [W/m2]
+potenciaRefrigeracionUnitaria = 5 // Potencia de refrigeración por metro cuadrado de superficie construida [W/m2]
 potenciaRefrigeracion = potenciaRefrigeracionUnitaria * superficiePiso // [W]
 precioEnergiaRefrigeracion = 0.12/1000 // [dólares/Wh]
 
@@ -91,20 +83,20 @@ function Qe = Q_edif(t, T_int)
 endfunction
 
 function Qc = Q_calef(t,hr_ini_cal,hr_cal)
+    // Potencia de calefacción en función del tiempo
     hr_fin_cal = hr_ini_cal + hr_cal
-    if (t/3600) >= hr_fin_cal && (t/3600) <= hr_ini_cal then
-        Qc = 0;
-    else
+    if (t/3600) >= hr_ini_cal && (t/3600) <= hr_fin_cal then
         Qc = potenciaCalefaccion;
+    else
+        Qc = 0;
     end
 endfunction
 
 function Qr = Q_refri(t,hr_ini_ref,hr_ref)
+    // Potencia de refrigeración en función del tiempo (negativa = extrae calor)
     hr_fin_ref = hr_ini_ref + hr_ref
-    if t <= hr_ini_ref*3600 then
-        Qr = 0;
-    elseif t <= hr_fin_ref*3600 then
-        Qr = potenciaRefrigeracion;
+    if t/3600 >= hr_ini_ref && t/3600 <= hr_fin_ref then
+        Qr = -potenciaRefrigeracion;
     else
         Qr = 0;
     end
@@ -144,11 +136,15 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
     
     
     for i=1:N,
-    // COMPLETAR METOD0 DE EULER
-    // Al finalizar el METOD0 de Euler se debe tener un Vector FILA 'T'
-    // con las temperaturas para cada tiempo en SEGUNDOS que se guarda en 
-    // el vector 't'
-    
+        t_actual = t(i);
+        T_actual = T(i);
+        
+        // MÉTODO DE EULER: T(i+1) = T(i) + Dt * f(t(i), T(i))
+        dT_dt = f(t_actual, T_actual, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref);
+        T_nueva = T_actual + Dt * dT_dt;
+        
+        T = [T, T_nueva];
+        t = [t, t_actual + Dt];
     end
     
     
@@ -158,7 +154,8 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
     
     for i=1:N,
         Qc = [Qc, Q_calef(t(i), hr_ini_cal, hr_cal)];
-        Qr = [Qr, Q_refri(t(i), hr_ini_ref, hr_ref)]
+        Qr_val = Q_refri(t(i), hr_ini_ref, hr_ref);
+        Qr = [Qr, abs(Qr_val)]; // Valor absoluto para la integración
     end
 
     
@@ -207,11 +204,14 @@ function temperatura = funcion_perfil_temperatura(X)
     N = (24 * 3600)/ Dt;
     
     for i=1:N,
-    // COMPLETAR METOD0 DE EULER
-    // Al finalizar el METOD0 de Euler se debe tener un Vector FILA 'T'
-    // con las temperaturas para cada tiempo en SEGUNDOS que se guarda en 
-    // el vector 't'
-    
+        t_actual = t(i);
+        T_actual = T(i);
+        
+        dT_dt = f(t_actual, T_actual, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref);
+        T_nueva = T_actual + Dt * dT_dt;
+        
+        T = [T, T_nueva];
+        t = [t, t_actual + Dt];
     end
     
     temperatura = T
