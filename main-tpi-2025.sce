@@ -327,6 +327,17 @@ tol = 0.01
 
 for k = 1:max_iter
     // COMPLETAR EL METOD0 del GRADIENTE DESCENDENTE para minimizar 'fobj'    
+    // Calcular el gradiente en el punto actual X
+    g = grad_f(X);
+    
+    //Actualizar el vector X en la dirección opuesta al gradiente
+    X = X - alpha * g;
+    
+    //Comprobar convergencia
+    if norm(g) < tol then
+        printf("Convergencia alcanzada en iteración %d\n", k);
+        break;
+    end
 end
 
 // Presentar nueva solución
