@@ -285,19 +285,38 @@ endfunction
 // DEFINICION DE DERIVADAS PARCIALES NUMERICAS
 
 function dfx1 = Dfx1(X)
-    // Calcular derivada de fobj() en respecto de x1
+    // Calculamos la derivada parcial respecto a hr_ini_cal (X(1))
+    // usando la definición de derivada: f'(x) ≈ [f(x+h) - f(x)] / h
+    
+    h = 0.01  // Paso pequeño para la aproximación numérica
+    
+    X_h = X  // Copia de X para incrementar
+    X_h(1) = X_h(1) + h  // Incrementamos solo la primera componente
+    
+    // Calculamos la diferencia de la función dividida por h
+    // Esto nos da la pendiente (tasa de cambio) en dirección de X(1)
+    dfx1 = (fobj(X_h) - fobj(X)) / h
 endfunction
 
 function dfx2 = Dfx2(X)
-    // Calcular derivada de fobj() en respecto de x2 
+    h = 0.01
+    X_h = X
+    X_h(2) = X_h(2) + h  // Incrementamos solo la segunda componente
+    dfx2 = (fobj(X_h) - fobj(X)) / h
 endfunction
 
 function dfx3 = Dfx3(X)
-    // Calcular derivada de fobj() en respecto de x3 
+    h = 0.01
+    X_h = X
+    X_h(3) = X_h(3) + h  // Incrementamos solo la segunda componente
+    dfx3 = (fobj(X_h) - fobj(X)) / h
 endfunction
 
 function dfx4 = Dfx4(X)
-    // Calcular derivada de fobj() en respecto de x4 
+    h = 0.01
+    X_h = X
+    X_h(4) = X_h(4) + h  // Incrementamos solo la segunda componente
+    dfx4 = (fobj(X_h) - fobj(X)) / h
 endfunction
 
 // DEFINICION DE LA FUNCIÓN GRADIENTE
