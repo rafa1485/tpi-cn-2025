@@ -303,6 +303,10 @@ endfunction
 
 function dfx4 = Dfx4(X)
     // Calcular derivada de fobj() en respecto de x4 
+    h =0.001;
+    X_h = X;
+    X_h(4) = X_h(4) + h; 
+    dfx4 = (fobj(X_h) - fobj(X)) / h;
 endfunction
 
 // DEFINICION DE LA FUNCIÓN GRADIENTE
