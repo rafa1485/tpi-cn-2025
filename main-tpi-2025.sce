@@ -257,22 +257,43 @@ function fcc = fobj(X)
     fcc = funcion_costo_climatizacion(X, %F) + epsilon1 * diferencia_cuad_inicio_fin + epsilon2 * varianza_temperatura + epsilon3*1/X(2) + epsilon4*1/X(4)
 endfunction
 
-// DEFINICION DE DERIVADAS PARCIALES NUMERICAS
+// ============================================================================
+// MÉTODO NUMÉRICO: DERIVADAS PARCIALES POR DIFERENCIAS FINITAS CENTRADAS
+// Descripción: Calcula las derivadas parciales de la función objetivo usando
+//              aproximación numérica con diferencias finitas centradas.
+// Fórmula: df/dx ≈ [f(x+h) - f(x-h)] / (2h)
+// ============================================================================
 
 function dfx1 = Dfx1(X)
-    // Calcular derivada de fobj() en respecto de x1
+    // Derivada parcial respecto a hr_ini_cal (hora inicio calefacción)
+    h = 0.01; // Paso pequeño
+    X_mas = X; X_mas(1) = X(1) + h;
+    X_menos = X; X_menos(1) = X(1) - h;
+    dfx1 = (fobj(X_mas) - fobj(X_menos)) / (2*h);
 endfunction
 
 function dfx2 = Dfx2(X)
-    // Calcular derivada de fobj() en respecto de x2 
+    // Derivada parcial respecto a hr_cal (duración calefacción)
+    h = 0.01;
+    X_mas = X; X_mas(2) = X(2) + h;
+    X_menos = X; X_menos(2) = X(2) - h;
+    dfx2 = (fobj(X_mas) - fobj(X_menos)) / (2*h);
 endfunction
 
 function dfx3 = Dfx3(X)
-    // Calcular derivada de fobj() en respecto de x3 
+    // Derivada parcial respecto a hr_ini_ref (hora inicio refrigeración)
+    h = 0.01;
+    X_mas = X; X_mas(3) = X(3) + h;
+    X_menos = X; X_menos(3) = X(3) - h;
+    dfx3 = (fobj(X_mas) - fobj(X_menos)) / (2*h);
 endfunction
 
 function dfx4 = Dfx4(X)
-    // Calcular derivada de fobj() en respecto de x4 
+    // Derivada parcial respecto a hr_ref (duración refrigeración)
+    h = 0.01;
+    X_mas = X; X_mas(4) = X(4) + h;
+    X_menos = X; X_menos(4) = X(4) - h;
+    dfx4 = (fobj(X_mas) - fobj(X_menos)) / (2*h);
 endfunction
 
 // DEFINICION DE LA FUNCIÓN GRADIENTE
