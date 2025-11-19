@@ -287,6 +287,10 @@ endfunction
 
 function dfx2 = Dfx2(X)
     // Calcular derivada de fobj() en respecto de x2 
+    h = 0.001; 
+    X_h = X;
+    X_h(2) = X_h(2) + h; 
+    dfx2 = (fobj(X_h) - fobj(X)) / h; 
 endfunction
 
 function dfx3 = Dfx3(X)
