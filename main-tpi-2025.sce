@@ -336,8 +336,33 @@ max_iter = 100
 tol = 0.01
 
 for k = 1:max_iter
-    // COMPLETAR EL METOD0 del GRADIENTE DESCENDENTE para minimizar 'fobj'    
+    // Calculamos el gradiente en el punto actual
+    // El gradiente apunta hacia donde la función crece más rápido
+    // La X sale de mas arriba, donde se definen las variables que se van a optimizar. 
+    grad = grad_f(X)
+    
+    // Actualizamos X moviéndonos en dirección OPUESTA al gradiente
+    // X = X - α * ∇f(X)
+    // El signo negativo hace que bajemos hacia el mínimo
+    X = X - alpha * grad
+    
+    // Verificamos si convergió
+    // norm(grad) calcula la magnitud (longitud) del vector gradiente
+    // Si es muy pequeña, significa que estamos cerca de un punto crítico (mínimo)
+    if norm(grad) < tol then
+        printf("Convergencia alcanzada en iteración %d\n", k)
+        break  // Salimos del bucle porque ya encontramos el mínimo
+    end
+    
+    // Mostramos el progreso para ver cómo va mejorando
+
+    printf("Iteración %d: fobj = %f\n", k, fobj(X)) 
+    printf("Iteración %d: costo mensual = %f\n", k, funcion_costo_climatizacion(X, %F));
 end
+printf("\n=== SOLUCIÓN FINAL ===\n");
+printf("Calefacción: %.2fh a %.2fh (duración:    %.2fh)\n", X(1), X(1)+X(2), X(2));
+printf("Refrigeración: %.2fh a %.2fh (duración: %.2fh)\n", X(3), X(3)+X(4), X(4));
+
 
 // Presentar nueva solución
 
