@@ -142,11 +142,25 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
     
     
     for i=1:N,
-    // COMPLETAR METOD0 DE EULER
-    // Al finalizar el METOD0 de Euler se debe tener un Vector FILA 'T'
-    // con las temperaturas para cada tiempo en SEGUNDOS que se guarda en 
-    // el vector 't'
-    
+        // METODO DE EULER
+        tiempo_actual = t(i)  // Tomamos el tiempo actual del vector
+        Temperatura_actual = T(i)  // Tomamos la temperatura actual del vector
+        
+        // Calculamos la derivada dT/dt en el punto actual
+        // Esta derivada representa la tasa de cambio de temperatura
+        // La function f es la dT mas arriba
+        dT = f(tiempo_actual, Temperatura_actual, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref)
+        
+        // Aplicamos la fórmula de Euler: T(i+1) = T(i) + f(t,T) * Δt
+        // Esto es como decir: nueva_temperatura = temperatura_actual + cambio_en_Dt_segundos
+        Temperatura_nueva = Temperatura_actual + dT * Dt
+        
+        // Avanzamos el tiempo sumando el paso temporal Dt
+        tiempo_nuevo = tiempo_actual + Dt
+        
+        // Agregamos los nuevos valores a los vectores para seguir iterando
+        T = [T, Temperatura_nueva]
+        t = [t, tiempo_nuevo]
     end
     
     
@@ -205,10 +219,25 @@ function temperatura = funcion_perfil_temperatura(X)
     N = (24 * 3600)/ Dt;
     
     for i=1:N,
-    // COMPLETAR METOD0 DE EULER
-    // Al finalizar el METOD0 de Euler se debe tener un Vector FILA 'T'
-    // con las temperaturas para cada tiempo en SEGUNDOS que se guarda en 
-    // el vector 't'
+        // METODO DE EULER
+        tiempo_actual = t(i)  // Tomamos el tiempo actual del vector
+        Temperatura_actual = T(i)  // Tomamos la temperatura actual del vector
+        
+        // Calculamos la derivada dT/dt en el punto actual
+        // Esta derivada representa la tasa de cambio de temperatura
+        // La function f es la dT mas arriba
+        dT = f(tiempo_actual, Temperatura_actual, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref)
+        
+        // Aplicamos la fórmula de Euler: T(i+1) = T(i) + f(t,T) * Δt
+        // Esto es como decir: nueva_temperatura = temperatura_actual + cambio_en_Dt_segundos
+        Temperatura_nueva = Temperatura_actual + dT * Dt
+        
+        // Avanzamos el tiempo sumando el paso temporal Dt
+        tiempo_nuevo = tiempo_actual + Dt
+        
+        // Agregamos los nuevos valores a los vectores para seguir iterando
+        T = [T, Temperatura_nueva]
+        t = [t, tiempo_nuevo]
     
     end
     
