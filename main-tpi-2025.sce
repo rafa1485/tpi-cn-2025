@@ -247,14 +247,21 @@ graficar = %T // %T : graficar , %F : NO graficar
 funcion_costo_climatizacion(X, graficar);
 
 function fcc = fobj(X)
-    epsilon1 = 10
-    epsilon2 = 100
-    epsilon3 = 0.1
+    epsilon1 = 10   // Penalización: T_final ≈ T_inicial
+    epsilon2 = 100  // Penalización: baja varianza de temperatura
+    epsilon3 = 0.1  // Penalización: evitar duraciones muy cortas
     epsilon4 = 0.1
+    
+    // Restricciones de límites
+    if X(2) <= 0 || X(4) <= 0 then
+        fcc = 1e10; // Penalización grande
+        return;
+    end
+    
     temperatura_diaria = funcion_perfil_temperatura(X)
     diferencia_cuad_inicio_fin = (temperatura_diaria($) - temperatura_diaria(1))^2
     varianza_temperatura = stdev(temperatura_diaria)^2
-    fcc = funcion_costo_climatizacion(X, %F) + epsilon1 * diferencia_cuad_inicio_fin + epsilon2 * varianza_temperatura + epsilon3*1/X(2) + epsilon4*1/X(4)
+    fcc = funcion_costo_climatizacion(X, %F) + epsilon1 * diferencia_cuad_inicio_fin + epsilon2 * varianza_temperatura + epsilon3/X(2) + epsilon4/X(4)
 endfunction
 
 // ============================================================================
@@ -306,14 +313,39 @@ function g = grad_f(X)
 endfunction
 
 
+// ============================================================================
+// MÉTODO NUMÉRICO: GRADIENTE DESCENDENTE
+// Descripción: Algoritmo de optimización que minimiza la función objetivo
+//              moviéndose en la dirección opuesta al gradiente.
+// Fórmula: X(k+1) = X(k) - α * ∇f(X(k))
+// donde α es la tasa de aprendizaje (learning rate)
+// ============================================================================
 
-// GRADIENTE DESCENDENTE
-alpha = 0.01
-max_iter = 100
-tol = 0.01
+alpha = 0.005      // Tasa de aprendizaje (learning rate)
+max_iter = 50      // Número máximo de iteraciones
+tol = 0.01         // Tolerancia para convergencia
 
 for k = 1:max_iter
-    // COMPLETAR EL METOD0 del GRADIENTE DESCENDENTE para minimizar 'fobj'    
+    // Calcular el gradiente en el punto actual
+    grad = grad_f(X);
+    
+    // Actualizar X: X_nuevo = X - alpha * gradiente
+    X_nuevo = X - alpha * grad;
+    
+    // Restricciones: mantener valores físicamente razonables
+    X_nuevo(1) = max(0, min(24, X_nuevo(1))); // hr inicio calef [0-24]
+    X_nuevo(2) = max(0.5, min(24, X_nuevo(2))); // duración calef [0.5-24]
+    X_nuevo(3) = max(0, min(24, X_nuevo(3))); // hr inicio refrig [0-24]
+    X_nuevo(4) = max(0.5, min(24, X_nuevo(4))); // duración refrig [0.5-24]
+    
+    // Verificar convergencia: si el cambio es pequeño, detenerse
+    if norm(X_nuevo - X) < tol then
+        printf("Convergencia alcanzada en iteración %d\n", k);
+        break;
+    end
+    
+    X = X_nuevo;
+    printf("Iteración %d: X = [%.2f, %.2f, %.2f, %.2f]\n", k, X(1), X(2), X(3), X(4));
 end
 
 // Presentar nueva solución
