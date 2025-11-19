@@ -176,7 +176,6 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
         t = [t, tiempo_nuevo]
     end
     
-    
     // CALCULO DEL PERFIL DE CALOR DE CALEFACCION Y REFRIGERACION
     Qc = [Q_calef(0)]
     Qr = [Q_refri(0)]
@@ -187,16 +186,12 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
     end
 
     
+
     // INTEGRACION DE LA ENERGIA DE CALEFACCION A LO LARGO DEL DIA (JOULES)
-    energiaCalefaccionDiaria = funcion_integral(t, Qc)
-    // Programar una funcion_integral(t,Qc), que calcule la Energía total 
-    // de Calefacción mediente la integral de Qc en funcion de t // [Joules]
-    
+    energiaCalefaccionDiaria = funcion_integral(t, Qc); // [Joules]
     
     // INTEGRACION DE LA ENERGIA DE REFRIGERACION A LO LARGO DEL DIA (JOULES)
-    energiaRefrigeracionDiaria = funcion_integral(t, Qr) // [Joules]
-    // Programar una funcion_integral(t,Qr), que calcule la Energía total 
-    // de Refrigeración mediente la integral de Qr en funcion de t // [Joules]
+    energiaRefrigeracionDiaria = funcion_integral(t, Qr); // [Joules]
     
     energiaCalefaccionMensual_Wh = energiaCalefaccionDiaria * 30 / 3600
     
@@ -232,7 +227,7 @@ function temperatura = funcion_perfil_temperatura(X)
     N = (24 * 3600)/ Dt;
     
     for i=1:N,
-        // METODO DE EULER
+       // METODO DE EULER
         tiempo_actual = t(i)  // Tomamos el tiempo actual del vector
         Temperatura_actual = T(i)  // Tomamos la temperatura actual del vector
         
@@ -257,7 +252,7 @@ function temperatura = funcion_perfil_temperatura(X)
     temperatura = T
 endfunction
 
-// PROGAMACION OPTIMIZACIÓN CON GRADIETNE DESCENDENTE
+// PROGAMACION OPTIMIZACIÓN
 inicioCalefaccion = 0 // "Hora a la que se enciende la Refrigeracion"
 finCalefaccion = 24 // "Hora a la que se apaga la refrigeración"
 inicioRefrigeracion = 8 // "Hora a la que se enciende la Refrigeracion"
@@ -272,107 +267,157 @@ graficar = %T // %T : graficar , %F : NO graficar
 funcion_costo_climatizacion(X, graficar);
 
 function fcc = fobj(X)
-    epsilon1 = 10
-    epsilon2 = 100
-    epsilon3 = 0.1
-    epsilon4 = 0.1
-    temperatura_diaria = funcion_perfil_temperatura(X)
-    diferencia_cuad_inicio_fin = (temperatura_diaria($) - temperatura_diaria(1))^2
-    varianza_temperatura = stdev(temperatura_diaria)^2
-    fcc = funcion_costo_climatizacion(X, %F) + epsilon1 * diferencia_cuad_inicio_fin + epsilon2 * varianza_temperatura + epsilon3*1/X(2) + epsilon4*1/X(4)
-endfunction
-
-// DEFINICION DE DERIVADAS PARCIALES NUMERICAS
-
-function dfx1 = Dfx1(X)
-    // Calculamos la derivada parcial respecto a hr_ini_cal (X(1))
-    // usando la definición de derivada: f'(x) ≈ [f(x+h) - f(x)] / h
-    
-    h = 0.01  // Paso pequeño para la aproximación numérica
-    
-    X_h = X  // Copia de X para incrementar
-    X_h(1) = X_h(1) + h  // Incrementamos solo la primera componente
-    
-    // Calculamos la diferencia de la función dividida por h
-    // Esto nos da la pendiente (tasa de cambio) en dirección de X(1)
-    dfx1 = (fobj(X_h) - fobj(X)) / h
-endfunction
-
-function dfx2 = Dfx2(X)
-    h = 0.01
-    X_h = X
-    X_h(2) = X_h(2) + h  // Incrementamos solo la segunda componente
-    dfx2 = (fobj(X_h) - fobj(X)) / h
-endfunction
-
-function dfx3 = Dfx3(X)
-    h = 0.01
-    X_h = X
-    X_h(3) = X_h(3) + h  // Incrementamos solo la segunda componente
-    dfx3 = (fobj(X_h) - fobj(X)) / h
-endfunction
-
-function dfx4 = Dfx4(X)
-    h = 0.01
-    X_h = X
-    X_h(4) = X_h(4) + h  // Incrementamos solo la segunda componente
-    dfx4 = (fobj(X_h) - fobj(X)) / h
-endfunction
-
-// DEFINICION DE LA FUNCIÓN GRADIENTE
-function g = grad_f(X)
-    d1 = Dfx1(X)
-    d2 = Dfx2(X)
-    d3 = Dfx3(X)
-    d4 = Dfx4(X)
-    g = [d1; d2; d3; d4]
-endfunction
-
-
-
-// GRADIENTE DESCENDENTE
-alpha = 0.01
-max_iter = 100
-tol = 0.01
-
-for k = 1:max_iter
-    // Calculamos el gradiente en el punto actual
-    // El gradiente apunta hacia donde la función crece más rápido
-    // La X sale de mas arriba, donde se definen las variables que se van a optimizar. 
-    grad = grad_f(X)
-    
-    // Actualizamos X moviéndonos en dirección OPUESTA al gradiente
-    // X = X - α * ∇f(X)
-    // El signo negativo hace que bajemos hacia el mínimo
-    X = X - alpha * grad
-    
-    // Verificamos si convergió
-    // norm(grad) calcula la magnitud (longitud) del vector gradiente
-    // Si es muy pequeña, significa que estamos cerca de un punto crítico (mínimo)
-    if norm(grad) < tol then
-        printf("Convergencia alcanzada en iteración %d\n", k)
-        break  // Salimos del bucle porque ya encontramos el mínimo
+    // RESTRICCIONES DE RANGO (0 a 24 horas)
+    // Si el algoritmo propone tiempos negativos o mayores a 24 (para inicio), devolvemos infinito.
+    if or(X < 0) | or(X > 24) then
+        fcc = %inf;
+        return;
     end
+
+    // OBTENCIÓN DE DATOS
+    temperatura_diaria = funcion_perfil_temperatura(X);
+    costo_dinero = funcion_costo_climatizacion(X, %F); // %F para no graficar
+
+    // PENALIZACIÓN POR TEMPERATURA (Estricta 18°C - 22°C)
+    // Reemplaza a la varianza. Castiga fuertemente si sale de la zona de confort.
     
-    // Mostramos el progreso para ver cómo va mejorando
+    // Exceso por calor (> 22):
+    diferencia_sup = temperatura_diaria - 22;
+    violacion_sup = sum(diferencia_sup(diferencia_sup > 0).^2); 
+    
+    // Exceso por frío (< 18):
+    diferencia_inf = 18 - temperatura_diaria;
+    violacion_inf = sum(diferencia_inf(diferencia_inf > 0).^2);
+    
+    penalidad_temp = 20000 * (violacion_sup + violacion_inf);
 
-    printf("Iteración %d: fobj = %f\n", k, fobj(X)) 
-    printf("Iteración %d: costo mensual = %f\n", k, funcion_costo_climatizacion(X, %F));
-end
-printf("\n=== SOLUCIÓN FINAL ===\n");
-printf("Calefacción: %.2fh a %.2fh (duración:    %.2fh)\n", X(1), X(1)+X(2), X(2));
-printf("Refrigeración: %.2fh a %.2fh (duración: %.2fh)\n", X(3), X(3)+X(4), X(4));
+    // PENALIZACIÓN POR CICLO
+    // La temperatura final debe ser igual a la inicial para que el ciclo sea sostenible.
+    diferencia_cuad_inicio_fin = (temperatura_diaria($) - temperatura_diaria(1))^2;
+    penalidad_ciclo = 5000 * diferencia_cuad_inicio_fin;
 
+    // PENALIZACIÓN POR SOLAPAMIENTO
+    // Evita que Calefacción y Refrigeración se prendan al mismo tiempo.
+    ini_c = X(1); fin_c = X(1) + X(2);
+    ini_r = X(3); fin_r = X(3) + X(4);
+    
+    // Cálculo de intersección de horarios
+    horas_solapadas = max(0, min(fin_c, fin_r) - max(ini_c, ini_r));
+    penalidad_overlap = 10000 * horas_solapadas;
+
+    // PENALIZACIÓN POR DURACIÓN EXCESIVA (> 24h)
+    // Arregla el "bug" donde la duración se iba a 25 horas.
+    penalidad_duracion = 0;
+    if X(2) > 24 then 
+        penalidad_duracion = penalidad_duracion + 50000 * (X(2)-24)^2; 
+    end
+    if X(4) > 24 then 
+        penalidad_duracion = penalidad_duracion + 50000 * (X(4)-24)^2; 
+    end
+
+    // (Objetivo a Minimizar)
+    fcc = costo_dinero + penalidad_temp + penalidad_ciclo + penalidad_overlap + penalidad_duracion;
+
+endfunction
 
 // Presentar nueva solución
-// La otra solución está en otro archivo por simplicidad, se trata del algoritmo "Reconocido Simulado"
-// El algoritmo Reconocido Simulado busca minimizar una función probando soluciones vecinas al azar. 
-// Si la nueva solución es mejor, siempre la acepta; si es peor, a veces la acepta según una probabilidad controlada por la temperatura T. 
-// Con T alta explora mucho y puede escapar de mínimos locales, y con T baja se vuelve más estricto y solo mejora la solución. 
-// La temperatura se va reduciendo con un factor alpha: si alpha es alto, el enfriamiento es lento (explora más y tarda más); 
-// si alpha es bajo, enfría rápido (va directo a refinar pero puede quedar atrapado en un mínimo local).
+// FUNCIÓN OBJETIVO ROBUSTA
+
+function penalidad = calcular_penalidad_solapamiento(X)
+    // Evitar que Calefacción y Refrigeración se prendan a la vez
+    ini_cal = X(1); fin_cal = X(1) + X(2);
+    ini_ref = X(3); fin_ref = X(3) + X(4);
+    
+    solapamiento = max(0, min(fin_cal, fin_ref) - max(ini_cal, ini_ref));
+    
+    if solapamiento > 0 then penalidad = 10000 * solapamiento; else penalidad = 0; end
+endfunction
+
+// 2. ALGORITMO DE RECOCIDO SIMULADO (SIMULATED ANNEALING)
+
+printf("\n=== INICIANDO RECOCIDO SIMULADO ===\n");
+
+// Configuración del Algoritmo
+T = 100;           // Temperatura inicial (Alta para explorar)
+T_min = 1;          // Temperatura final (Baja para refinar)
+alpha = 0.95;       // Factor de enfriamiento (0.90 a 0.99)
+iter_por_temp = 20; // Cuántos vecinos probar en cada nivel de temperatura
+
+// Solución Inicial
+// X = [InicioCal, DuracionCal, InicioRef, DuracionRef]
+X_actual = [0; 12; 12; 4]; // Arrancamos con una lógica básica
+costo_actual = fobj(X_actual);
+
+X_mejor = X_actual;
+costo_mejor = costo_actual;
+
+// Bucle de Enfriamiento
+contador_total = 0;
+
+while T > T_min
+    
+    for i = 1:iter_por_temp
+        // 1. Generar Vecino (Perturbación aleatoria)
+        // Modificamos los tiempos en un rango de +/- 2 horas aprox
+        ruido = (rand(4,1) - 0.5) * 4; 
+        X_nuevo = X_actual + ruido;
+        
+        // 2. Clamping (Forzar límites 0-24)
+        // Si se pasa de 24, lo dejamos en 24. Si es < 0, en 0.
+        X_nuevo(X_nuevo > 24) = 24;
+        X_nuevo(X_nuevo < 0) = 0;
+        
+        // 3. Evaluar Energía (Costo)
+        costo_nuevo = fobj(X_nuevo);
+        
+        // 4. Calcular Delta de Energía
+        delta_E = costo_nuevo - costo_actual;
+         
+        // 5. Criterio de Aceptación (Metrópolis)
+        aceptar = %F;
+        
+        if delta_E < 0 then
+            // Si es mejor, lo aceptamos siempre
+            aceptar = %T;
+        else
+            // Si es peor, lo aceptamos con probabilidad P = exp(-delta / T)
+            // Esto permite salir de mínimos locales al principio
+            probabilidad = exp(-delta_E / T);
+            if rand() < probabilidad then
+                aceptar = %T;
+            end
+        end
+        
+        // 6. Actualizar estados
+        if aceptar then
+            X_actual = X_nuevo;
+            costo_actual = costo_nuevo;
+            
+            // ¿Es el mejor histórico?
+            if costo_actual < costo_mejor then
+                X_mejor = X_actual;
+                costo_mejor = costo_actual;
+            end
+        end
+        
+        contador_total = contador_total + 1;
+    end
+    
+    // Reporte visual
+    printf("Temp: %.2f | fobj: %.4f | X_mejor: [%.1f, %.1f, %.1f, %.1f]\n", T, costo_mejor, X_mejor(1), X_mejor(2), X_mejor(3), X_mejor(4));
+    
+    // Enfriar el sistema
+    T = T * alpha;
+end
 
 
-printf("\nMinimo aproximado en X = [%f, %f, %f, %f]\n", X(1), X(2), X(3), X(4));
-graficar = %T // %T : graficar , %F : NO graficar
-funcion_costo_climatizacion(X, graficar);
+// RESULTADO FINAL
+
+printf("\n SOLUCIÓN ÓPTIMA (SIMULATED ANNEALING) \n");
+printf("Iteraciones totales: %d\n", contador_total);
+printf("Calefacción:   Inicio %5.2fh | Duración %5.2fh\n", X_mejor(1), X_mejor(2));
+printf("Refrigeración: Inicio %5.2fh | Duración %5.2fh\n", X_mejor(3), X_mejor(4));
+
+// Graficar solución final con el costo real
+graficar = %T;
+funcion_costo_climatizacion(X_mejor, graficar);
