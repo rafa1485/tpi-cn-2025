@@ -99,9 +99,7 @@ endfunction
 
 function Qr = Q_refri(t,hr_ini_ref,hr_ref)
     hr_fin_ref = hr_ini_ref + hr_ref
-    if t <= hr_ini_ref*3600 then
-        Qr = 0;
-    elseif t <= hr_fin_ref*3600 then
+    if t/3600 >= hr_ini_ref && t/3600 <= hr_fin_ref then
         Qr = potenciaRefrigeracion;
     else
         Qr = 0;
@@ -114,7 +112,7 @@ function Qt = Q_total(t, T_int, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref)
     Qe = Q_edif(t,T_int);
     Qc = Q_calef(t,hr_ini_cal,hr_cal)
     Qr = Q_refri(t,hr_ini_ref,hr_ref)
-    Qt = Qp + Qe + Qc + Qr;
+    Qt = Qp + Qe + Qc - Qr;
 endfunction
 
 function dT = f(t,T_int, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref)
@@ -175,7 +173,7 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
         T = [T, Temperatura_nueva]
         t = [t, tiempo_nuevo]
     end
-    
+
     
     // CALCULO DEL PERFIL DE CALOR DE CALEFACCION Y REFRIGERACION
     Qc = [Q_calef(0)]
@@ -192,11 +190,11 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
     // Programar una funcion_integral(t,Qc), que calcule la Energía total 
     // de Calefacción mediente la integral de Qc en funcion de t // [Joules]
     
-    
+
     // INTEGRACION DE LA ENERGIA DE REFRIGERACION A LO LARGO DEL DIA (JOULES)
-    energiaRefrigeracionDiaria = funcion_integral(t, Qr) // [Joules]
+    energiaRefrigeracionDiaria = funcion_integral(t, Qr) // [Joules] 
     // Programar una funcion_integral(t,Qr), que calcule la Energía total 
-    // de Refrigeración mediente la integral de Qr en funcion de t // [Joules]
+    // de Refrigeración mediente la integral de Qr en funcion de t // [Joules] 
     
     energiaCalefaccionMensual_Wh = energiaCalefaccionDiaria * 30 / 3600
     
@@ -259,9 +257,9 @@ endfunction
 
 // PROGAMACION OPTIMIZACIÓN CON GRADIETNE DESCENDENTE
 inicioCalefaccion = 0 // "Hora a la que se enciende la Refrigeracion"
-finCalefaccion = 24 // "Hora a la que se apaga la refrigeración"
-inicioRefrigeracion = 8 // "Hora a la que se enciende la Refrigeracion"
-finRefrigeracion = 6 // "Hora a la que se apaga la refrigeración"
+finCalefaccion = 10 // "Hora a la que se apaga la refrigeración"
+inicioRefrigeracion = 13 // "Hora a la que se enciende la Refrigeracion"
+finRefrigeracion = 4 // "Hora a la que se apaga la refrigeración"
 
 X = [inicioCalefaccion;
      finCalefaccion;
@@ -270,16 +268,34 @@ X = [inicioCalefaccion;
      
 graficar = %T // %T : graficar , %F : NO graficar
 funcion_costo_climatizacion(X, graficar);
-
-function fcc = fobj(X)
+function fcc=fobj(X)
+    costo_base = funcion_costo_climatizacion(X, %F)
+    temperatura_diaria = funcion_perfil_temperatura(X);
+    
+    penalizacion = 0;
+    
+    min_T = min(temperatura_diaria);
+    max_T = max(temperatura_diaria);
+    
+    // Se redujo un poco el factor de penalizacion para evitar derivadas explosivas
+    // pero se mantiene alto para priorizar la temperatura sobre el costo.
+    Factor_Penalizacion = 10000; 
+    
+    if min_T < 18 then
+        penalizacion = penalizacion + (18 - min_T)^2 * Factor_Penalizacion; 
+    end
+    
+    if max_T > 22 then
+        penalizacion = penalizacion + (max_T - 22)^2 * Factor_Penalizacion;
+    end
+    
     epsilon1 = 10
     epsilon2 = 100
     epsilon3 = 0.1
     epsilon4 = 0.1
-    temperatura_diaria = funcion_perfil_temperatura(X)
     diferencia_cuad_inicio_fin = (temperatura_diaria($) - temperatura_diaria(1))^2
     varianza_temperatura = stdev(temperatura_diaria)^2
-    fcc = funcion_costo_climatizacion(X, %F) + epsilon1 * diferencia_cuad_inicio_fin + epsilon2 * varianza_temperatura + epsilon3*1/X(2) + epsilon4*1/X(4)
+    fcc = costo_base + penalizacion + epsilon1 * diferencia_cuad_inicio_fin + epsilon2 * varianza_temperatura + epsilon3*1/X(2) + epsilon4*1/X(4)
 endfunction
 
 // DEFINICION DE DERIVADAS PARCIALES NUMERICAS
@@ -288,7 +304,7 @@ function dfx1 = Dfx1(X)
     // Calculamos la derivada parcial respecto a hr_ini_cal (X(1))
     // usando la definición de derivada: f'(x) ≈ [f(x+h) - f(x)] / h
     
-    h = 0.01  // Paso pequeño para la aproximación numérica
+    h = 0.1  // Paso pequeño para la aproximación numérica
     
     X_h = X  // Copia de X para incrementar
     X_h(1) = X_h(1) + h  // Incrementamos solo la primera componente
@@ -299,21 +315,21 @@ function dfx1 = Dfx1(X)
 endfunction
 
 function dfx2 = Dfx2(X)
-    h = 0.01
+    h = 0.1
     X_h = X
     X_h(2) = X_h(2) + h  // Incrementamos solo la segunda componente
     dfx2 = (fobj(X_h) - fobj(X)) / h
 endfunction
 
 function dfx3 = Dfx3(X)
-    h = 0.01
+    h = 0.1
     X_h = X
     X_h(3) = X_h(3) + h  // Incrementamos solo la segunda componente
     dfx3 = (fobj(X_h) - fobj(X)) / h
 endfunction
 
 function dfx4 = Dfx4(X)
-    h = 0.01
+    h = 0.1
     X_h = X
     X_h(4) = X_h(4) + h  // Incrementamos solo la segunda componente
     dfx4 = (fobj(X_h) - fobj(X)) / h
@@ -328,12 +344,11 @@ function g = grad_f(X)
     g = [d1; d2; d3; d4]
 endfunction
 
-
-
 // GRADIENTE DESCENDENTE
-alpha = 0.01
-max_iter = 100
-tol = 0.01
+// Alpha chico porque la penalizacion genera derivadas grandes
+alpha = 0.0001  
+max_iter = 200
+tol = 0.5 
 
 for k = 1:max_iter
     // Calculamos el gradiente en el punto actual
@@ -346,6 +361,18 @@ for k = 1:max_iter
     // El signo negativo hace que bajemos hacia el mínimo
     X = X - alpha * grad
     
+    // Limites
+    // Horas Inicio
+    if X(1) < 0 then X(1) = 0; end
+    if X(1) > 24 then X(1) = 24; end
+    
+    if X(3) < 0 then X(3) = 0; end
+    if X(3) > 24 then X(3) = 24; end
+    
+    // Duraciones: Solo limite inferior para evitar errores en fobj
+    if X(2) < 0.5 then X(2) = 0.5; end
+    if X(4) < 0.5 then X(4) = 0.5; end
+
     // Verificamos si convergió
     // norm(grad) calcula la magnitud (longitud) del vector gradiente
     // Si es muy pequeña, significa que estamos cerca de un punto crítico (mínimo)
@@ -355,14 +382,14 @@ for k = 1:max_iter
     end
     
     // Mostramos el progreso para ver cómo va mejorando
-
-    printf("Iteración %d: fobj = %f\n", k, fobj(X)) 
-    printf("Iteración %d: costo mensual = %f\n", k, funcion_costo_climatizacion(X, %F));
+    if (modulo(k, 10) == 0) then
+        printf("Iteración %d: fobj = %f\n", k, fobj(X)) 
+        printf("Iteración %d: costo mensual = %f\n", k, funcion_costo_climatizacion(X, %F));
+    end
 end
 printf("\n=== SOLUCIÓN FINAL ===\n");
 printf("Calefacción: %.2fh a %.2fh (duración:    %.2fh)\n", X(1), X(1)+X(2), X(2));
 printf("Refrigeración: %.2fh a %.2fh (duración: %.2fh)\n", X(3), X(3)+X(4), X(4));
-
 
 // Presentar nueva solución
 // La otra solución está en otro archivo por simplicidad, se trata del algoritmo "Reconocido Simulado"
