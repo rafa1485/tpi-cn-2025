@@ -3,29 +3,35 @@ clc
 
 
 // DEFINICION PARA SALIDA GRAFICA
-function grafico_salida(t,T,Qc,Qr,costoRefrigeracion,costoCalefaccion,nombre_ventana)
-    f = figure();
-    f.figure_name = nombre_ventana; // Asignar nombre a la ventana
+function grafico_salida(t,T,Qc,Qr,costoRefrigeracion,costoCalefaccion,titulo)
+    f = figure()
+    f.figure_name = titulo
     
     subplot(4,1,1)
     plot(t/3600,T)
-    title("Temperatura Interior vs Tiempo")
-    xlabel("Tiempo [horas]")
-    ylabel("Temperatura [°C]")
+    xlabel('Tiempo [horas]')
+    ylabel('Temperatura [°C]')
+    title('Evolución de la Temperatura Interior')
+    xgrid()
     
     subplot(4,1,2)
-    plot(Qc,'r')
-    title("Potencia de Calefacción")
-    ylabel("Potencia [W]")
+    plot(t/3600,Qc,'r')
+    xlabel('Tiempo [horas]')
+    ylabel('Potencia [W]')
+    title('Perfil de Calefacción')
+    xgrid()
     
     subplot(4,1,3)
-    plot(Qr,'b')
-    title("Potencia de Refrigeración")
-    ylabel("Potencia [W]")
+    plot(t/3600,Qr,'b')
+    xlabel('Tiempo [horas]')
+    ylabel('Potencia [W]')
+    title('Perfil de Refrigeración')
+    xgrid()
     
     subplot(4,1,4)
-    xstring(0.1,0.33,"Costo Refrigeración= U$D"+string(costoRefrigeracion),0,0)
-    xstring(0.1,0.66,"Costo Calefacción= U$D"+string(costoCalefaccion),0,0)
+    xstring(0.1,0.33,"Costo Refrigeración= U$D "+string(costoRefrigeracion),0,0)
+    xstring(0.1,0.66,"Costo Calefacción= U$D "+string(costoCalefaccion),0,0)
+    xstring(0.1,0.1,"Costo Total= U$D "+string(costoCalefaccion+costoRefrigeracion),0,0)
 endfunction
 
 TAmbMax = 24 //"Máxima Temperatura Ambiente"
@@ -227,7 +233,7 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
         printf("Costo Calefacción: U$D %.2f\n", costoCalefaccion)
         printf("Costo Refrigeración: U$D %.2f\n", costoRefrigeracion)
         printf("Costo Total: U$D %.2f\n\n", costoClimatizacion)
-        grafico_salida(t,T,Qc,Qr,costoRefrigeracion,costoCalefaccion,"Solución Actual")
+        grafico_salida(t,T,Qc,Qr,costoRefrigeracion,costoCalefaccion, titulo)
     end
 endfunction
 
@@ -284,7 +290,7 @@ X = [inicioCalefaccion;
      
 printf("\n=== SOLUCION INICIAL ===\n")
 graficar = %T // %T : graficar , %F : NO graficar
-funcion_costo_climatizacion(X, graficar);
+funcion_costo_climatizacion(X, graficar, "Solución Inicial");
 
 function fcc = fobj(X)
     epsilon1 = 10
@@ -294,7 +300,7 @@ function fcc = fobj(X)
     temperatura_diaria = funcion_perfil_temperatura(X)
     diferencia_cuad_inicio_fin = (temperatura_diaria($) - temperatura_diaria(1))^2
     varianza_temperatura = stdev(temperatura_diaria)^2
-    fcc = funcion_costo_climatizacion(X, %F) + epsilon1 * diferencia_cuad_inicio_fin + epsilon2 * varianza_temperatura + epsilon3*1/X(2) + epsilon4*1/X(4)
+    fcc = funcion_costo_climatizacion(X, %F, "Optimización FCC") + epsilon1 * diferencia_cuad_inicio_fin + epsilon2 * varianza_temperatura + epsilon3*1/X(2) + epsilon4*1/X(4)
 endfunction
 
 // DEFINICION DE DERIVADAS PARCIALES NUMERICAS
@@ -349,13 +355,9 @@ function g = grad_f(X)
 endfunction
 
 // GRADIENTE DESCENDENTE
-alpha = 0.05  // Tasa de aprendizaje (paso más agresivo para converger más rápido)
-max_iter = 20  // Número máximo de iteraciones (reducido para pruebas rápidas)
-tol = 0.5      // Tolerancia de convergencia
-
-printf("\n\n=== OPTIMIZACION POR GRADIENTE DESCENDENTE ===\n")
-printf("Parametros: alpha=%.3f, max_iter=%d, tol=%.3f\n", alpha, max_iter, tol)
-printf("Tiempo estimado: 1-3 minutos\n\n")
+alpha = 0.01  // Tasa de aprendizaje (paso más agresivo para converger más rápido)
+max_iter = 100  // Número máximo de iteraciones
+tol = 0.01      // Tolerancia de convergencia
 
 for k = 1:max_iter // Inicia bucle que itera hasta max_iter veces
     printf("Iteracion %d/%d... ", k, max_iter)
@@ -384,4 +386,4 @@ printf("Duracion refrigeración: %.2f horas\n", X(4))
 printf("\nVector X optimizado = [%.4f, %.4f, %.4f, %.4f]\n", X(1), X(2), X(3), X(4));
 
 graficar = %T // %T : graficar , %F : NO graficar
-funcion_costo_climatizacion(X, graficar);
+funcion_costo_climatizacion(X, graficar, "Solución Optimizada");
