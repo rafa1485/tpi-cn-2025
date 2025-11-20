@@ -270,18 +270,50 @@ endfunction
 
 function dfx1 = Dfx1(X)
     // Calcular derivada de fobj() en respecto de x1
+    h = 0.001;
+    Xp = X;
+    Xm = X;
+
+    Xp(1) = Xp(1) + h;
+    Xm(1) = Xm(1) - h;
+
+    dfx1 = (fobj(Xp) - fobj(Xm)) / (2*h);
 endfunction
 
 function dfx2 = Dfx2(X)
     // Calcular derivada de fobj() en respecto de x2 
+     h = 0.001;
+    Xp = X;
+    Xm = X;
+
+    Xp(2) = Xp(2) + h;
+    Xm(2) = Xm(2) - h;
+
+    dfx2 = (fobj(Xp) - fobj(Xm)) / (2*h);
 endfunction
 
 function dfx3 = Dfx3(X)
-    // Calcular derivada de fobj() en respecto de x3 
+    // Calcular derivada de fobj() en respecto de x3
+    h = 0.001;
+    Xp = X;
+    Xm = X;
+
+    Xp(3) = Xp(3) + h;
+    Xm(3) = Xm(3) - h;
+
+    dfx3 = (fobj(Xp) - fobj(Xm)) / (2*h);  
 endfunction
 
 function dfx4 = Dfx4(X)
     // Calcular derivada de fobj() en respecto de x4 
+     h = 0.001;
+    Xp = X;
+    Xm = X;
+
+    Xp(4) = Xp(4) + h;
+    Xm(4) = Xm(4) - h;
+
+    dfx4 = (fobj(Xp) - fobj(Xm)) / (2*h);
 endfunction
 
 // DEFINICION DE LA FUNCIÓN GRADIENTE
@@ -307,6 +339,6 @@ end
 // Presentar nueva solución
 
 
-printf("\nMinimo aproximado en X = [%f, %f, %f, %f]\n", X(1), X(2), X(3), X(4));
+printf("\nMinimo aproximado en X = [%f, %f, %f, %f]\n", X(1), X(2), X(3), X(4)); 
 graficar = %T // %T : graficar , %F : NO graficar
 funcion_costo_climatizacion(X, graficar);
