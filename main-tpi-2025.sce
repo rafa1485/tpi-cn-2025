@@ -163,23 +163,23 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
     
     
     // CALCULO DEL PERFIL DE CALOR DE CALEFACCION Y REFRIGERACION
-    Qc = [Q_calef(0)]
-    Qr = [Q_refri(0)]
+    Qc = []
+    Qr = []
     
-    for i=1:N,
-        Qc = [Qc, Q_calef(t(i), hr_ini_cal, hr_cal)];
-        Qr = [Qr, Q_refri(t(i), hr_ini_ref, hr_ref)]
+    for i=1:length(t)
+        Qc(i) = Q_calef(t(i), hr_ini_cal, hr_cal)
+        Qr(i) = Q_refri(t(i), hr_ini_ref, hr_ref)
     end
 
     
     // INTEGRACION DE LA ENERGIA DE CALEFACCION A LO LARGO DEL DIA (JOULES)
-    energiaCalefaccionDiaria = 0
+    energiaCalefaccionDiaria = funcion_integral(t,Qc) // [Joules]
     // Programar una funcion_integral(t,Qc), que calcule la Energía total 
     // de Calefacción mediente la integral de Qc en funcion de t // [Joules]
     
     
     // INTEGRACION DE LA ENERGIA DE REFRIGERACION A LO LARGO DEL DIA (JOULES)
-    energiaRefrigeracionDiaria = 0 // [Joules]
+    energiaRefrigeracionDiaria = funcion_integral(t,Qr) // [Joules]
     // Programar una funcion_integral(t,Qr), que calcule la Energía total 
     // de Refrigeración mediente la integral de Qr en funcion de t // [Joules]
     
@@ -192,8 +192,6 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
     costoRefrigeracion = precioEnergiaRefrigeracion * energiaRefrigeracionMensual_Wh
     
     costoClimatizacion = costoCalefaccion + costoRefrigeracion
-    
-    disp(costoClimatizacion)
 
     if graficar then
         grafico_salida(t,T,Qc,Qr,costoRefrigeracion,costoCalefaccion)
