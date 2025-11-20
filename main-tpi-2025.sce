@@ -3,16 +3,25 @@ clc
 
 
 // DEFINICION PARA SALIDA GRAFICA
-function grafico_salida(t,T,Qc,Qr,costoRefrigeracion,costoCalefaccion)
-    figure()
+function grafico_salida(t,T,Qc,Qr,costoRefrigeracion,costoCalefaccion,nombre_ventana)
+    f = figure();
+    f.figure_name = nombre_ventana; // Asignar nombre a la ventana
+    
     subplot(4,1,1)
     plot(t/3600,T)
+    title("Temperatura Interior vs Tiempo")
+    xlabel("Tiempo [horas]")
+    ylabel("Temperatura [°C]")
     
     subplot(4,1,2)
     plot(Qc,'r')
+    title("Potencia de Calefacción")
+    ylabel("Potencia [W]")
     
     subplot(4,1,3)
     plot(Qr,'b')
+    title("Potencia de Refrigeración")
+    ylabel("Potencia [W]")
     
     subplot(4,1,4)
     xstring(0.1,0.33,"Costo Refrigeración= U$D"+string(costoRefrigeracion),0,0)
@@ -90,10 +99,10 @@ endfunction
 
 function Qc = Q_calef(t,hr_ini_cal,hr_cal)
     hr_fin_cal = hr_ini_cal + hr_cal
-    if (t/3600) >= hr_fin_cal && (t/3600) <= hr_ini_cal then
-        Qc = 0;
+    if (t/3600) >= hr_ini_cal && (t/3600) <= hr_fin_cal then
+        Qc = potenciaCalefaccion;  // Calefacción ENCENDIDA entre hr_ini_cal y hr_fin_cal
     else
-        Qc = potenciaCalefaccion;
+        Qc = 0;  // Calefacción APAGADA fuera del rango
     end
 endfunction
 
@@ -214,7 +223,11 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
     costoClimatizacion = costoCalefaccion + costoRefrigeracion
 
     if graficar then
-        grafico_salida(t,T,Qc,Qr,costoRefrigeracion,costoCalefaccion)
+        printf("\n--- RESUMEN DE COSTOS ---\n")
+        printf("Costo Calefacción: U$D %.2f\n", costoCalefaccion)
+        printf("Costo Refrigeración: U$D %.2f\n", costoRefrigeracion)
+        printf("Costo Total: U$D %.2f\n\n", costoClimatizacion)
+        grafico_salida(t,T,Qc,Qr,costoRefrigeracion,costoCalefaccion,"Solución Actual")
     end
 endfunction
 
@@ -269,6 +282,7 @@ X = [inicioCalefaccion;
      inicioRefrigeracion;
      finRefrigeracion]
      
+printf("\n=== SOLUCION INICIAL ===\n")
 graficar = %T // %T : graficar , %F : NO graficar
 funcion_costo_climatizacion(X, graficar);
 
@@ -335,27 +349,39 @@ function g = grad_f(X)
 endfunction
 
 // GRADIENTE DESCENDENTE
-alpha = 0.01
-max_iter = 100
-tol = 0.01
+alpha = 0.05  // Tasa de aprendizaje (paso más agresivo para converger más rápido)
+max_iter = 20  // Número máximo de iteraciones (reducido para pruebas rápidas)
+tol = 0.5      // Tolerancia de convergencia
 
-for k = 1:max_iter // Inicia bucle que itera hasta max_iter (100) veces
+printf("\n\n=== OPTIMIZACION POR GRADIENTE DESCENDENTE ===\n")
+printf("Parametros: alpha=%.3f, max_iter=%d, tol=%.3f\n", alpha, max_iter, tol)
+printf("Tiempo estimado: 1-3 minutos\n\n")
+
+for k = 1:max_iter // Inicia bucle que itera hasta max_iter veces
+    printf("Iteracion %d/%d... ", k, max_iter)
     // COMPLETAR EL METOD0 del GRADIENTE DESCENDENTE para minimizar 'fobj'   
     g = grad_f(X); // Calcula el gradiente (vector con 4 derivadas parciales) en el punto actual X
     X_new = X - alpha * g; // Calcula nueva posición: se mueve en dirección opuesta al gradiente con paso alpha
-    if norm(X_new - X) < tol then // Verifica si la distancia euclidiana entre X_new y X es menor que la tolerancia
+    norma = norm(X_new - X);
+    printf("norma=%.4f\n", norma)
+    if norma < tol then // Verifica si la distancia euclidiana entre X_new y X es menor que la tolerancia
+        printf("\n*** CONVERGENCIA ALCANZADA en iteracion %d ***\n", k)
         break; // Sale del bucle anticipadamente si convergió (cambio muy pequeño)
     end
     X = X_new; // Actualiza X con el nuevo valor para la próxima iteración
 end
 
-// Presentar nueva solución
-printf("\n-----SOLUCION OPTIMIZADA POR GRADIENTE DESCENDENTE-----\n")
-printf("Inicio calefacción: %.2f horas\n", X(1))
-printf("Fin calefacción: %.2f horas\n", X(2))
-printf("Inicio refrigeración: %.2f horas\n", X(3))
-printf("Fin refrigeración: %.2f horas\n", X(4))
+if k == max_iter then
+    printf("\n*** Se alcanzo el maximo de iteraciones sin convergencia total ***\n")
+end
 
-printf("\nMinimo aproximado en X = [%f, %f, %f, %f]\n", X(1), X(2), X(3), X(4));
+// Presentar nueva solución
+printf("\n\n=== SOLUCION OPTIMIZADA ===\n")
+printf("Inicio calefacción: %.2f horas\n", X(1))
+printf("Duracion calefacción: %.2f horas\n", X(2))
+printf("Inicio refrigeración: %.2f horas\n", X(3))
+printf("Duracion refrigeración: %.2f horas\n", X(4))
+printf("\nVector X optimizado = [%.4f, %.4f, %.4f, %.4f]\n", X(1), X(2), X(3), X(4));
+
 graficar = %T // %T : graficar , %F : NO graficar
 funcion_costo_climatizacion(X, graficar);
