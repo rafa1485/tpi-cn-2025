@@ -131,7 +131,7 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
     hr_ini_ref = X(3)
     hr_ref = X(4)
     
-    
+
     // PROGRAMACION METOD0 DE EULER PARA CALCULAR LA EVOLUCION DE LA TEMPERATURA
     T_ini = 19.5;
     T = [T_ini]
@@ -140,13 +140,22 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
     t = [0]
     N = (24 * 3600)/ Dt;
     
+
+    
     
     for i=1:N,
     // COMPLETAR METOD0 DE EULER
     // Al finalizar el METOD0 de Euler se debe tener un Vector FILA 'T'
     // con las temperaturas para cada tiempo en SEGUNDOS que se guarda en 
     // el vector 't'
+    dT = f(t(i),T(i), hr_ini_cal, hr_cal, hr_ini_ref, hr_ref)
+
+    t(i+1) = t(i) + Dt
+    T(i+1) = T(i) + dT *Dt
     
+    T_ext(i+1) = T_exterior(t(i+1))
+
+
     end
     
     
@@ -161,13 +170,21 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
 
     
     // INTEGRACION DE LA ENERGIA DE CALEFACCION A LO LARGO DEL DIA (JOULES)
-    energiaCalefaccionDiaria = 0
+
+    
+    
+    
+    
+    energiaCalefaccionDiaria = funcion_integral(t,Qc)   
     // Programar una funcion_integral(t,Qc), que calcule la Energía total 
     // de Calefacción mediente la integral de Qc en funcion de t // [Joules]
+   
+        
+    
     
     
     // INTEGRACION DE LA ENERGIA DE REFRIGERACION A LO LARGO DEL DIA (JOULES)
-    energiaRefrigeracionDiaria = 0 // [Joules]
+    energiaRefrigeracionDiaria = funcion_integral(t,Qr) // [Joules]
     // Programar una funcion_integral(t,Qr), que calcule la Energía total 
     // de Refrigeración mediente la integral de Qr en funcion de t // [Joules]
     
@@ -209,7 +226,13 @@ function temperatura = funcion_perfil_temperatura(X)
     // Al finalizar el METOD0 de Euler se debe tener un Vector FILA 'T'
     // con las temperaturas para cada tiempo en SEGUNDOS que se guarda en 
     // el vector 't'
-    
+
+    dt = f(t(i),T(i), hr_ini_cal, hr_cal, hr_ini_ref, hr_ref)
+    t(i+1) = t(i) + Dt
+    T(i+1) = T(i) + dt * Dt
+
+
+    T_ext(i+1) = T_exterior(t(i+1))
     end
     
     temperatura = T
@@ -244,18 +267,32 @@ endfunction
 
 function dfx1 = Dfx1(X)
     // Calcular derivada de fobj() en respecto de x1
-endfunction
+    //definimos el paso h
+    h = 0.1
+    //Estimamos utilizando diferencia centrada
+
+    endfunction
 
 function dfx2 = Dfx2(X)
     // Calcular derivada de fobj() en respecto de x2 
+    h = 0.1
+    //Estimamos utilizando diferencia centrada
+
+
 endfunction
 
 function dfx3 = Dfx3(X)
     // Calcular derivada de fobj() en respecto de x3 
+    h = 0.1
+    //Estimamos utilizando diferencia centrada
+
 endfunction
 
 function dfx4 = Dfx4(X)
-    // Calcular derivada de fobj() en respecto de x4 
+    // Calcular derivada de fobj() en respecto de x4
+    h = 0.1
+    //Estimamos utilizando diferencia centrada
+
 endfunction
 
 // DEFINICION DE LA FUNCIÓN GRADIENTE
@@ -275,7 +312,11 @@ max_iter = 100
 tol = 0.01
 
 for k = 1:max_iter
-    // COMPLETAR EL METOD0 del GRADIENTE DESCENDENTE para minimizar 'fobj'    
+    // COMPLETAR EL METOD0 del GRADIENTE DESCENDENTE para minimizar 'fobj' 
+
+
+
+
 end
 
 // Presentar nueva solución
