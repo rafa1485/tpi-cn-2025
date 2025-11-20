@@ -211,7 +211,8 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar, titulo)
     
     costoCalefaccion = precioEnergiaCalefaccion * energiaCalefaccionMensual_Wh
     
-    energiaRefrigeracionMensual_Wh = energiaRefrigeracionDiaria * 30 / 3600
+    // La energía de refrigeración es negativa (extrae calor), pero el costo debe ser positivo
+    energiaRefrigeracionMensual_Wh = abs(energiaRefrigeracionDiaria) * 30 / 3600
     
     costoRefrigeracion = precioEnergiaRefrigeracion * energiaRefrigeracionMensual_Wh
     
@@ -281,8 +282,14 @@ printf("Costo Mensual Inicial: U$D %.5f\n", costo_inicial)
 printf("\n")
 
 function fcc = fobj(X)
-    // Optimizar solo el costo de climatización
-    fcc = funcion_costo_climatizacion(X, %F)
+    epsilon1 = 0.1
+    epsilon2 = 1
+    epsilon3 = 0.01
+    epsilon4 = 0.01
+    temperatura_diaria = funcion_perfil_temperatura(X)
+    diferencia_cuad_inicio_fin = (temperatura_diaria($) - temperatura_diaria(1))^2
+    varianza_temperatura = stdev(temperatura_diaria)^2
+    fcc = funcion_costo_climatizacion(X, %F) + epsilon1 * diferencia_cuad_inicio_fin + epsilon2 * varianza_temperatura + epsilon3*1/X(2) + epsilon4*1/X(4)
 endfunction
 
 // DEFINICION DE DERIVADAS PARCIALES NUMERICAS
