@@ -175,16 +175,34 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
 
     
     // INTEGRACION DE LA ENERGIA DE CALEFACCION A LO LARGO DEL DIA (JOULES)
-    energiaCalefaccionDiaria = 0
     // Programar una funcion_integral(t,Qc), que calcule la Energía total 
     // de Calefacción mediente la integral de Qc en funcion de t // [Joules]
+    // Método del Trapecio: Area = (base * (altura1 + altura2)) / 2
+    function energia = funcion_integral_calefaccion(t,Qc)
+        energia = 0
+        for i=1:(length(t)-1),
+            Dt = t(i+1) - t(i)
+            energia = energia + (Qc(i) + Qc(i+1)) * Dt / 2
+        end
+    endfunction
+    
+    energiaCalefaccionDiaria = funcion_integral_calefaccion(t, Qc)
     
     
     // INTEGRACION DE LA ENERGIA DE REFRIGERACION A LO LARGO DEL DIA (JOULES)
-    energiaRefrigeracionDiaria = 0 // [Joules]
     // Programar una funcion_integral(t,Qr), que calcule la Energía total 
     // de Refrigeración mediente la integral de Qr en funcion de t // [Joules]
+    // Método del Trapecio: Area = (base * (altura1 + altura2)) / 2
+    function energia = funcion_integral_refrigeracion(t,Qr)
+        energia = 0
+        for i=1:(length(t)-1),
+            Dt = t(i+1) - t(i)
+            energia = energia + (Qr(i) + Qr(i+1)) * Dt / 2
+        end
+    endfunction
     
+    energiaRefrigeracionDiaria = funcion_integral_refrigeracion(t, Qr) // [Joules]
+
     energiaCalefaccionMensual_Wh = energiaCalefaccionDiaria * 30 / 3600
     
     costoCalefaccion = precioEnergiaCalefaccion * energiaCalefaccionMensual_Wh
