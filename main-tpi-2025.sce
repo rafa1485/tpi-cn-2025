@@ -16,7 +16,7 @@ function grafico_salida(t,T,Qc,Qr,costoRefrigeracion,costoCalefaccion)
     ylabel("Qc [W]")
 
     subplot(4,1,3)
-    plot(Qr,'b')
+    plot(t/3600,Qr,'b')
     xlabel("Hora del día")
     ylabel("Qr [W]")
     
