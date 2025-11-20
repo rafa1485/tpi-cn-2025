@@ -331,6 +331,43 @@ tol = 0.01
 
 for k = 1:max_iter
     // COMPLETAR EL METOD0 del GRADIENTE DESCENDENTE para minimizar 'fobj'
+        gradiente = grad_f(X)
+    f_actual = fobj(X)
+    X_nuevo = X - alpha * gradiente
+    
+    if X_nuevo(1) < 0 then X_nuevo(1) = 0; end
+    if X_nuevo(2) < 0.1 then X_nuevo(2) = 0.1; end
+    if X_nuevo(3) < 0 then X_nuevo(3) = 0; end
+    if X_nuevo(4) < 0.1 then X_nuevo(4) = 0.1; end
+    
+    if X_nuevo(1) + X_nuevo(2) > 24 then
+        X_nuevo(2) = 24 - X_nuevo(1)
+    end
+    
+    if X_nuevo(3) + X_nuevo(4) > 24 then
+        X_nuevo(4) = 24 - X_nuevo(3)
+    end
+    
+    f_nuevo = fobj(X_nuevo)
+    
+    delta_f = abs(f_nuevo - f_actual)
+    
+    if modulo(k, 10) == 0 | k == 1 then
+        printf("Iter %3d: f(X) = %f, ||grad|| = %f, delta_f = %f\n", ...
+               k, f_nuevo, norm(gradiente), delta_f);
+        printf("  X = [%f, %f, %f, %f]\n", X_nuevo(1), X_nuevo(2), X_nuevo(3), X_nuevo(4));
+    end
+    
+    X = X_nuevo
+    
+    if delta_f < tol then
+        printf("\nconvergencia alcanzada en la iteración %d!\n", k);
+        break;
+    end
+    
+    if k == max_iter then
+        printf("\número máximo de iteraciones (%d)\n", max_iter);
+    end
 end
 
 // Presentar nueva solución
