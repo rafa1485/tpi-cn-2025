@@ -333,7 +333,20 @@ max_iter = 100
 tol = 0.01
 
 for k = 1:max_iter
-    // COMPLETAR EL METOD0 del GRADIENTE DESCENDENTE para minimizar 'fobj'    
+    // COMPLETAR EL METOD0 del GRADIENTE DESCENDENTE para minimizar 'fobj'
+    g = grad_f(X);         // Gradiente numérico
+    ng = norm(g);          // Norma del gradiente
+
+    printf("Iter %3d | X=[%8.4f %8.4f %8.4f %8.4f] | f(X)=%10.6f | ||grad||=%8.6f \n", ...
+            k, X(1), X(2), X(3), X(4), fobj(X), ng);
+
+    // Criterio de frenado
+    if ng < tol then
+        break;
+    end
+
+    // Actualización del vector X
+    X = X - alpha * g;    
 end
 
 // Presentar nueva solución
