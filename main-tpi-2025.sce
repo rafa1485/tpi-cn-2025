@@ -283,6 +283,10 @@ function dfx1 = Dfx1(X)
     //definimos el paso h
     h = 0.1
     //Estimamos utilizando diferencia centrada
+    Xp = X; Xm = X;
+    Xp(1) = X(1) + h;
+    Xm(1) = X(1) - h;
+    dfx1 = (fobj(Xp) - fobj(Xm)) / (2*h);
 
     endfunction
 
@@ -291,6 +295,11 @@ function dfx2 = Dfx2(X)
     h = 0.1
     //Estimamos utilizando diferencia centrada
 
+    Xp = X; Xm = X;
+    Xp(2) = X(2) + h;
+    Xm(2) = X(2) - h;
+    dfx2 = (fobj(Xp) - fobj(Xm)) / (2*h);    
+
 
 endfunction
 
@@ -298,6 +307,11 @@ function dfx3 = Dfx3(X)
     // Calcular derivada de fobj() en respecto de x3 
     h = 0.1
     //Estimamos utilizando diferencia centrada
+    Xp = X; Xm = X;
+    Xp(3) = X(3) + h;
+    Xm(3) = X(3) - h;
+    dfx3 = (fobj(Xp) - fobj(Xm)) / (2*h);
+
 
 endfunction
 
@@ -305,6 +319,11 @@ function dfx4 = Dfx4(X)
     // Calcular derivada de fobj() en respecto de x4
     h = 0.1
     //Estimamos utilizando diferencia centrada
+
+    Xp = X; Xm = X;
+    Xp(4) = X(4) + h;
+    Xm(4) = X(4) - h;
+    dfx4 = (fobj(Xp) - fobj(Xm)) / (2*h);
 
 endfunction
 
