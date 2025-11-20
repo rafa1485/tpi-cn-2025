@@ -130,9 +130,9 @@ function Qr = Q_refri(t, T_int, hr_ini_ref, hr_ref)
     if (t/3600) >= hr_ini_ref && (t/3600) <= hr_fin_ref then
         // Control por temperatura: encender si T > 20+2 = 22°C
         if T_int > (T_setpoint + T_histeresis) then
-            Qr = -potenciaRefrigeracion;  // Negativo porque EXTRAE calor del edificio
-        else
             Qr = 0;
+        else
+            Qr = potenciaRefrigeracion;  // Negativo porque EXTRAE calor del edificio
         end
     else
         Qr = 0;
