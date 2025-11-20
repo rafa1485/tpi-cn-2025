@@ -258,18 +258,30 @@ endfunction
 
 function dfx1 = Dfx1(X)
     // Calcular derivada de fobj() en respecto de x1
+    h=0.001
+    Xh=X; Xh(1)=X(1)+h
+    d=(fobj(Xh)-fobj(X))/h
 endfunction
 
 function dfx2 = Dfx2(X)
     // Calcular derivada de fobj() en respecto de x2 
+    h=0.001
+    Xh=X; Xh(2)=X(2)+h
+    d=(fobj(Xh)-fobj(X))/h
 endfunction
 
 function dfx3 = Dfx3(X)
     // Calcular derivada de fobj() en respecto de x3 
+    h=0.001
+    Xh=X; Xh(3)=X(3)+h
+    d=(fobj(Xh)-fobj(X))/h
 endfunction
 
 function dfx4 = Dfx4(X)
     // Calcular derivada de fobj() en respecto de x4 
+    h=0.001
+    Xh=X; Xh(4)=X(4)+h
+    d=(fobj(Xh)-fobj(X))/h
 endfunction
 
 // DEFINICION DE LA FUNCIÓN GRADIENTE
