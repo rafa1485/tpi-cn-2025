@@ -4,19 +4,36 @@ clc
 
 // DEFINICION PARA SALIDA GRAFICA
 function grafico_salida(t,T,Qc,Qr,costoRefrigeracion,costoCalefaccion)
+
+// Temperatura Interior
     figure()
     subplot(4,1,1)
     plot(t/3600,T)
+    xlabel("Tiempo [h]")
+    ylabel("Temperatura [°C]")
+    title("Temperatura interior")
     
+    //Perfil potencia Calefacción
     subplot(4,1,2)
     plot(Qc,'r')
-    
+    xlabel("Tiempo [h]")
+    ylabel("Potencia calefacción [W]")
+    title("Perfil de potencia de calefacción")
+
+    //Perfil potencia de refrigeración
+    //    Qr es negativo en el modelo (saca calor),
+    //    pero graficamos su magnitud para que se vea en 0..Pmax
     subplot(4,1,3)
-    plot(Qr,'b')
+    plot(abs(Qr),'b')
+     xlabel("Tiempo [h]")
+    ylabel("Potencia refrigeración [W]")
+    title("Perfil de potencia de refrigeración")
     
+    //Costos
     subplot(4,1,4)
     xstring(0.1,0.33,"Costo Refrigeración= U$D"+string(costoRefrigeracion),0,0)
     xstring(0.1,0.66,"Costo Calefacción= U$D"+string(costoCalefaccion),0,0)
+    xstring(0.1,0.1,"Costo TOTAL = U$D "+string(costoCalefaccion+costoRefrigeracion),0,0)
 endfunction
 
 TAmbMax = 24 //"Máxima Temperatura Ambiente"
@@ -59,10 +76,12 @@ capacidadCalorificaEspecifica = 800 // Capacidad Calorífica por kg del material
 capacidadCalorificaUnitaria = masaUnitaria * capacidadCalorificaEspecifica // [J/K/m2]
 capacidadCalorificaEdificio = capacidadCalorificaUnitaria * superficiePiso // [J/K]
 
-h = 18 // coeficiente de transferencia de calor por convección de la edificación a la velocidad de 3 m/s del aire
+//Actualizamos el h según el grafico para v = 3m/s 
+h = 19 // coeficiente de transferencia de calor por convección de la edificación a la velocidad de 3 m/s del aire
 conductanciaConveccionEdificacion = h * superficieEdificacion;
 
 function T_ext = T_exterior(t)
+    th = t/3600; // tiempo en horas
     if t <= InicioSubida*3600 then
         T_ext = TAmbMin;
     elseif t <= FinSubida*3600 then
@@ -90,22 +109,52 @@ endfunction
 
 function Qc = Q_calef(t,hr_ini_cal,hr_cal)
     hr_fin_cal = hr_ini_cal + hr_cal
-    if (t/3600) >= hr_fin_cal && (t/3600) <= hr_ini_cal then
-        Qc = 0;
-    else
+     t_hr = t/3600;
+    hr_ini_cal_norm = modulo(hr_ini_cal, 24);
+    hr_fin_cal_norm = modulo(hr_fin_cal, 24);
+
+    if hr_cal > 24 then
         Qc = potenciaCalefaccion;
+    elseif hr_ini_cal_norm < hr_fin_cal_norm then
+        if t_hr >= hr_ini_cal_norm & t_hr <= hr_fin_cal_norm then
+            Qc = potenciaCalefaccion;
+        else
+            Qc = 0;
+        end
+    else
+        if t_hr >= hr_ini_cal_norm | t_hr <= hr_fin_cal_norm then
+            Qc = potenciaCalefaccion;
+        else
+            Qc = 0;
+        end
     end
+
+    if Qc < 0 then Qc = 0; end
 endfunction
 
 function Qr = Q_refri(t,hr_ini_ref,hr_ref)
     hr_fin_ref = hr_ini_ref + hr_ref
-    if t <= hr_ini_ref*3600 then
-        Qr = 0;
-    elseif t <= hr_fin_ref*3600 then
+     t_hr = t/3600;
+    hr_ini_ref_norm = modulo(hr_ini_ref, 24);
+    hr_fin_ref_norm = modulo(hr_fin_ref, 24);
+
+    if hr_ref > 24 then
         Qr = potenciaRefrigeracion;
+    elseif hr_ini_ref_norm < hr_fin_ref_norm then
+        if t_hr >= hr_ini_ref_norm & t_hr <= hr_fin_ref_norm then
+            Qr = potenciaRefrigeracion;
+        else
+            Qr = 0;
+        end
     else
-        Qr = 0;
+        if t_hr >= hr_ini_ref_norm | t_hr <= hr_fin_ref_norm then
+            Qr = potenciaRefrigeracion;
+        else
+            Qr = 0;
+        end
     end
+
+    if Qr < 0 then Qr = 0; end
 endfunction
 
 
@@ -146,6 +195,13 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
     // Al finalizar el METOD0 de Euler se debe tener un Vector FILA 'T'
     // con las temperaturas para cada tiempo en SEGUNDOS que se guarda en 
     // el vector 't'
+
+     t_act = t(i);
+        T_act = T(i);
+        dTdt = f(t_act, T_act, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref);
+        T_nuevo = T_act + Dt * dTdt;
+        T = [T, T_nuevo];
+        t = [t, t_act + Dt];
     
     end
     
@@ -164,6 +220,7 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
     energiaCalefaccionDiaria = 0
     // Programar una funcion_integral(t,Qc), que calcule la Energía total 
     // de Calefacción mediente la integral de Qc en funcion de t // [Joules]
+
     
     
     // INTEGRACION DE LA ENERGIA DE REFRIGERACION A LO LARGO DEL DIA (JOULES)
@@ -209,6 +266,12 @@ function temperatura = funcion_perfil_temperatura(X)
     // Al finalizar el METOD0 de Euler se debe tener un Vector FILA 'T'
     // con las temperaturas para cada tiempo en SEGUNDOS que se guarda en 
     // el vector 't'
+     t_act = t(i);
+        T_act = T(i);
+        dTdt = f(t_act, T_act, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref);
+        T_nuevo = T_act + Dt * dTdt;
+        T = [T, T_nuevo];
+        t = [t, t_act + Dt]
     
     end
     
