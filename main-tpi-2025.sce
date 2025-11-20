@@ -320,22 +320,40 @@ function fcc = fobj(X)
 endfunction
 
 // DEFINICION DE DERIVADAS PARCIALES NUMERICAS
+h_pert = 1e-3;
 
 function dfx1 = Dfx1(X)
-    // Calcular derivada de fobj() en respecto de x1
+    Xp = X; Xm = X;
+    Xp(1) = X(1) + h_pert;
+    Xm(1) = X(1) - h_pert;
+    dfx1 = (fobj(Xp) - fobj(Xm)) / (2*h_pert);
 endfunction
 
 function dfx2 = Dfx2(X)
-    // Calcular derivada de fobj() en respecto de x2 
+    Xp = X; Xm = X;
+    Xp(2) = X(2) + h_pert;
+    Xm(2) = X(2) - h_pert;
+    dfx2 = (fobj(Xp) - fobj(Xm)) / (2*h_pert);
 endfunction
 
 function dfx3 = Dfx3(X)
-    // Calcular derivada de fobj() en respecto de x3 
+    Xp = X; Xm = X;
+    Xp(3) = X(3) + h_pert;
+    Xm(3) = X(3) - h_pert;
+    dfx3 = (fobj(Xp) - fobj(Xm)) / (2*h_pert);
 endfunction
 
 function dfx4 = Dfx4(X)
-    // Calcular derivada de fobj() en respecto de x4 
+    Xp = X; Xm = X;
+    Xp(4) = X(4) + h_pert;
+    Xm(4) = X(4) - h_pert;
+    dfx4 = (fobj(Xp) - fobj(Xm)) / (2*h_pert);
 endfunction
+
+function g = grad_f(X)
+    g = [Dfx1(X); Dfx2(X); Dfx3(X); Dfx4(X)];
+endfunction
+
 
 // DEFINICION DE LA FUNCIÓN GRADIENTE
 function g = grad_f(X)
