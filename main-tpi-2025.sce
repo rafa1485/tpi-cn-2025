@@ -301,11 +301,16 @@ max_iter = 100
 tol = 0.01
 
 for k = 1:max_iter
-    // COMPLETAR EL METOD0 del GRADIENTE DESCENDENTE para minimizar 'fobj'    
+    // COMPLETAR EL METOD0 del GRADIENTE DESCENDENTE para minimizar 'fobj'   
+    g = grad_f(X)
+    X_new = X - alpha * g
+    if norm(X_new - X) < tol then
+        break
+    end
+    X = X_new 
 end
 
 // Presentar nueva solución
-
 
 printf("\nMinimo aproximado en X = [%f, %f, %f, %f]\n", X(1), X(2), X(3), X(4));
 graficar = %T // %T : graficar , %F : NO graficar
