@@ -91,7 +91,11 @@ endfunction
 function Qc = Q_calef(t,hr_ini_cal,hr_cal)
     hr_fin_cal = hr_ini_cal + hr_cal
     if (t/3600) >= hr_ini_cal && (t/3600) <= hr_fin_cal then
-        Qc = potenciaCalefaccion;
+         if (t/3600 > 8 && t/3600 < 15) then
+            Qc = potenciaCalefaccion;// * 0.7;
+        else
+            Qc = potenciaCalefaccion;
+        end
     else
         Qc = 0;
     end
@@ -99,9 +103,7 @@ endfunction
 
 function Qr = Q_refri(t,hr_ini_ref,hr_ref)
     hr_fin_ref = hr_ini_ref + hr_ref
-    if t <= hr_ini_ref*3600 then
-        Qr = 0;
-    elseif t <= hr_fin_ref*3600 then
+    if t/3600 >= hr_ini_ref && t/3600 <= hr_fin_ref then
         Qr = potenciaRefrigeracion;
     else
         Qr = 0;
@@ -114,26 +116,13 @@ function Qt = Q_total(t, T_int, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref)
     Qe = Q_edif(t,T_int);
     Qc = Q_calef(t,hr_ini_cal,hr_cal)
     Qr = Q_refri(t,hr_ini_ref,hr_ref)
-    Qt = Qp + Qe + Qc + Qr;
+    Qt = Qp + Qe + Qc - Qr;
 endfunction
 
 function dT = f(t,T_int, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref)
     dT = Q_total(t,T_int, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref) / capacidadCalorificaEdificio;
 endfunction
 
-function integral = funcion_integral(t, Q)
-    integral = 0  // Inicializamos el acumulador de la integral
-    n = length(t)  // Obtenemos el número de puntos en el vector tiempo
-    
-    // Recorremos todos los intervalos entre puntos consecutivos
-    for i = 1:(n-1)
-        dt = t(i+1) - t(i)  // Calculamos el ancho del intervalo (base del trapecio)
-        
-        // Aplicamos la regla del trapecio: Área = (base * (altura1 + altura2)) / 2
-        // Q(i) y Q(i+1) son las alturas en los extremos del trapecio
-        integral = integral + (Q(i) + Q(i+1)) * dt / 2
-    end
-endfunction
 
 function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
 
@@ -186,7 +175,6 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
     end
 
     
-
     // INTEGRACION DE LA ENERGIA DE CALEFACCION A LO LARGO DEL DIA (JOULES)
     energiaCalefaccionDiaria = funcion_integral(t, Qc); // [Joules]
     
@@ -227,7 +215,6 @@ function temperatura = funcion_perfil_temperatura(X)
     N = (24 * 3600)/ Dt;
     
     for i=1:N,
-       // METODO DE EULER
         tiempo_actual = t(i)  // Tomamos el tiempo actual del vector
         Temperatura_actual = T(i)  // Tomamos la temperatura actual del vector
         
@@ -254,9 +241,9 @@ endfunction
 
 // PROGAMACION OPTIMIZACIÓN
 inicioCalefaccion = 0 // "Hora a la que se enciende la Refrigeracion"
-finCalefaccion = 24 // "Hora a la que se apaga la refrigeración"
-inicioRefrigeracion = 8 // "Hora a la que se enciende la Refrigeracion"
-finRefrigeracion = 6 // "Hora a la que se apaga la refrigeración"
+finCalefaccion = 10 // "Hora a la que se apaga la refrigeración"
+inicioRefrigeracion = 13 // "Hora a la que se enciende la Refrigeracion"
+finRefrigeracion = 4 // "Hora a la que se apaga la refrigeración"
 
 X = [inicioCalefaccion;
      finCalefaccion;
@@ -289,12 +276,12 @@ function fcc = fobj(X)
     diferencia_inf = 18 - temperatura_diaria;
     violacion_inf = sum(diferencia_inf(diferencia_inf > 0).^2);
     
-    penalidad_temp = 20000 * (violacion_sup + violacion_inf);
+    penalidad_temp = 7000 * (violacion_sup + violacion_inf);
 
     // PENALIZACIÓN POR CICLO
     // La temperatura final debe ser igual a la inicial para que el ciclo sea sostenible.
     diferencia_cuad_inicio_fin = (temperatura_diaria($) - temperatura_diaria(1))^2;
-    penalidad_ciclo = 5000 * diferencia_cuad_inicio_fin;
+    penalidad_ciclo = 100 * diferencia_cuad_inicio_fin;
 
     // PENALIZACIÓN POR SOLAPAMIENTO
     // Evita que Calefacción y Refrigeración se prendan al mismo tiempo.
@@ -314,9 +301,17 @@ function fcc = fobj(X)
     if X(4) > 24 then 
         penalidad_duracion = penalidad_duracion + 50000 * (X(4)-24)^2; 
     end
+    
+    // PENALIZACIÓN POR DURACIÓN EXCESIVA
+    // Factor_Duracion: un valor para castigar las horas de encendido (ej. 100)
+    Factor_Duracion = 100; 
 
+    // Castiga la duración linealmente: más horas encendidas = mayor costo de fobj
+    penalidad_duracion_larga = Factor_Duracion * (X(2) + X(4));
+
+    costo_escalado = costo_dinero * 100;
     // (Objetivo a Minimizar)
-    fcc = costo_dinero + penalidad_temp + penalidad_ciclo + penalidad_overlap + penalidad_duracion;
+    fcc = costo_escalado + penalidad_temp + penalidad_ciclo + penalidad_overlap + penalidad_duracion + penalidad_duracion_larga;
 
 endfunction
 
@@ -341,7 +336,7 @@ printf("\n=== INICIANDO RECOCIDO SIMULADO ===\n");
 T = 100;           // Temperatura inicial (Alta para explorar)
 T_min = 1;          // Temperatura final (Baja para refinar)
 alpha = 0.95;       // Factor de enfriamiento (0.90 a 0.99)
-iter_por_temp = 20; // Cuántos vecinos probar en cada nivel de temperatura
+iter_por_temp = 30; // Cuántos vecinos probar en cada nivel de temperatura
 
 // Solución Inicial
 // X = [InicioCal, DuracionCal, InicioRef, DuracionRef]
