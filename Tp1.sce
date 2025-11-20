@@ -183,9 +183,7 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
     
     costoCalefaccion = precioEnergiaCalefaccion * energiaCalefaccionMensual_Wh
     
-    energiaRefrigeracionMensual_Wh = energiaRefrigeracionDiaria * 30 / 3600
-    
-    costoRefrigeracion = precioEnergiaRefrigeracion * energiaRefrigeracionMensual_Wh
+    costoRefrigeracion = precioEnergiaRefrigeracion * energiaRefrigeracionDiaria * 30 / 3600 // La conversion a Wh se hace dentro del factor (30/3600)
     
     costoClimatizacion = costoCalefaccion + costoRefrigeracion
     
@@ -296,7 +294,17 @@ max_iter = 100
 tol = 0.01
 
 for k = 1:max_iter
-    // COMPLETAR EL METOD0 del GRADIENTE DESCENDENTE para minimizar 'fobj'    
+    // COMPLETAR EL METOD0 del GRADIENTE DESCENDENTE para minimizar 'fobj'
+    gradiente = grad_f(X);
+    X_nuevo = X - alpha * gradiente;
+    
+    // Verificar si la magnitud del gradiente es menor que la tolerancia
+    if norm(gradiente) < tol then
+        printf("\nConvergencia alcanzada en la iteración: %d\n", k);
+        break
+    end
+    
+    X = X_nuevo;
 end
 
 // Presentar nueva solución
