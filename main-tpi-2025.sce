@@ -133,7 +133,7 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
     
     
     // PROGRAMACION METOD0 DE EULER PARA CALCULAR LA EVOLUCION DE LA TEMPERATURA
-    T_ini = 19.5;
+    T_ini = 19.5; // El TP pide que la temperatura inicial sea de 20 +- 2 °C
     T = [T_ini]
     T_ext = [T_exterior(0)]
     Dt = 36;
@@ -212,8 +212,6 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
     costoRefrigeracion = precioEnergiaRefrigeracion * energiaRefrigeracionMensual_Wh
     
     costoClimatizacion = costoCalefaccion + costoRefrigeracion
-    
-    disp(costoClimatizacion)
 
     if graficar then
         grafico_salida(t,T,Qc,Qr,costoRefrigeracion,costoCalefaccion)
@@ -223,13 +221,13 @@ endfunction
 
 function temperatura = funcion_perfil_temperatura(X)
     // DEFINICION VARIABLES DE CONTROL TEMPERATURA
-    hr_ini_cal = X(1)
-    hr_cal = X(2)
-    hr_ini_ref = X(3)
-    hr_ref = X(4)
+    hr_ini_cal = X(1) // "Hora a la que se enciende la calefacción"
+    hr_cal = X(2) // "Hora a la que se apaga la calefacción"
+    hr_ini_ref = X(3) // "Hora a la que se enciende la refrigeración"
+    hr_ref = X(4) // "Hora a la que se apaga la refrigeración"
     
     // PROGRAMACION METOD0 DE EULER PARA CALCULAR LA EVOLUCION DE LA TEMPERATURA
-    T_ini = 19.5;
+    T_ini = 19.5; 
     T = [T_ini]
     T_ext = [T_exterior(0)]
     Dt = 36;
@@ -319,12 +317,12 @@ endfunction
 
 function dfx4 = Dfx4(X)
     // Calcular derivada de fobj() en respecto de x4 
-    h = 0.01;
-    X4_plus = X;
+    h = 0.01; // Paso de variación pequeño
+    X4_plus = X; // Inicialización de X4_plus
     X4_plus(4) = X4_plus(4) + h;
-    X4_minus = X;
-    X4_minus(4) = X4_minus(4) - h;
-    dfx4 = (fobj(X4_plus) - fobj(X4_minus)) / (2 * h);
+    X4_minus = X; // Inicialización de X4_minus
+    X4_minus(4) = X4_minus(4) - h; // Corregido el orden de las operaciones
+    dfx4 = (fobj(X4_plus) - fobj(X4_minus)) / (2 * h); // Derivada numérica por diferencia central
 endfunction
 
 // DEFINICION DE LA FUNCIÓN GRADIENTE
@@ -341,12 +339,22 @@ alpha = 0.01
 max_iter = 100
 tol = 0.01
 
-for k = 1:max_iter
+for k = 1:max_iter // Inicia bucle que itera hasta max_iter (100) veces
     // COMPLETAR EL METOD0 del GRADIENTE DESCENDENTE para minimizar 'fobj'   
+    g = grad_f(X); // Calcula el gradiente (vector con 4 derivadas parciales) en el punto actual X
+    X_new = X - alpha * g; // Calcula nueva posición: se mueve en dirección opuesta al gradiente con paso alpha
+    if norm(X_new - X) < tol then // Verifica si la distancia euclidiana entre X_new y X es menor que la tolerancia
+        break; // Sale del bucle anticipadamente si convergió (cambio muy pequeño)
+    end
+    X = X_new; // Actualiza X con el nuevo valor para la próxima iteración
 end
 
 // Presentar nueva solución
-
+printf("\n-----SOLUCION OPTIMIZADA POR GRADIENTE DESCENDENTE-----\n")
+printf("Inicio calefacción: %.2f horas\n", X(1))
+printf("Fin calefacción: %.2f horas\n", X(2))
+printf("Inicio refrigeración: %.2f horas\n", X(3))
+printf("Fin refrigeración: %.2f horas\n", X(4))
 
 printf("\nMinimo aproximado en X = [%f, %f, %f, %f]\n", X(1), X(2), X(3), X(4));
 graficar = %T // %T : graficar , %F : NO graficar
