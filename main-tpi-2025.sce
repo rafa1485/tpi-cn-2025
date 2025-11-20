@@ -174,13 +174,13 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
 
     
     // INTEGRACION DE LA ENERGIA DE CALEFACCION A LO LARGO DEL DIA (JOULES)
-    energiaCalefaccionDiaria = 0
+    energiaCalefaccionDiaria = funcion_integral(t,Qc);
     // Programar una funcion_integral(t,Qc), que calcule la Energía total 
     // de Calefacción mediente la integral de Qc en funcion de t // [Joules]
     
     
     // INTEGRACION DE LA ENERGIA DE REFRIGERACION A LO LARGO DEL DIA (JOULES)
-    energiaRefrigeracionDiaria = 0 // [Joules]
+    energiaRefrigeracionDiaria = funcion_integral(t,Qr) // [Joules]
     // Programar una funcion_integral(t,Qr), que calcule la Energía total 
     // de Refrigeración mediente la integral de Qr en funcion de t // [Joules]
     
@@ -262,7 +262,7 @@ function dfx1 = Dfx1(X)
     // Calcular derivada de fobj() en respecto de x1
     h=0.001
     Xh = X;
-    Xh(1) = X_h(1) + h; 
+    Xh(1) = Xh(1) + h; 
     dfx1 = (fobj(Xh) - fobj(X)) / h;
 endfunction
 
@@ -271,7 +271,7 @@ function dfx2 = Dfx2(X)
     h=0.001
     Xh = X;
     Xh(2) = Xh(1) + h; 
-    dfx1 = (fobj(Xh) - fobj(X)) / h;
+    dfx2 = (fobj(Xh) - fobj(X)) / h;
 endfunction
 
 function dfx3 = Dfx3(X)
@@ -308,6 +308,13 @@ tol = 0.01
 
 for k = 1:max_iter
     // COMPLETAR EL METOD0 del GRADIENTE DESCENDENTE para minimizar 'fobj'    
+    g = grad_f(X);
+    
+    if norm(g) < tol then
+        disp("Convergió en iteración "+string(k))
+        break;
+    end
+
 end
 
 // Presentar nueva solución
