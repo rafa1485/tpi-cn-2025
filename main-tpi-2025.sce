@@ -89,22 +89,24 @@ function Qe = Q_edif(t, T_int)
 endfunction
 
 function Qc = Q_calef(t,hr_ini_cal,hr_cal)
-    hr_fin_cal = hr_ini_cal + hr_cal
-    if (t/3600) >= hr_fin_cal && (t/3600) <= hr_ini_cal then
-        Qc = 0;
+    hora = t/3600;
+    hr_fin_cal = hr_ini_cal + hr_cal; // Hora de finalización de la calefacción
+
+    if hora >= hr_ini_cal & hora <= hr_fin_cal then // Si la hora actual está dentro del período de calefacción
+        Qc = potenciaCalefaccion; // Potencia de calefacción activa
     else
-        Qc = potenciaCalefaccion;
+        Qc = 0; // Potencia de calefacción inactiva
     end
 endfunction
 
 function Qr = Q_refri(t,hr_ini_ref,hr_ref)
-    hr_fin_ref = hr_ini_ref + hr_ref
-    if t <= hr_ini_ref*3600 then
-        Qr = 0;
-    elseif t <= hr_fin_ref*3600 then
-        Qr = potenciaRefrigeracion;
+    hora = t/3600;
+    hr_fin_ref = hr_ini_ref + hr_ref; // Hora de finalización de la refrigeración
+
+    if hora >= hr_ini_ref & hora <= hr_fin_ref then // Si la hora actual está dentro del período de refrigeración
+        Qr = potenciaRefrigeracion; // Potencia de refrigeración activa
     else
-        Qr = 0;
+        Qr = 0; // Potencia de refrigeración inactiva
     end
 endfunction
 
