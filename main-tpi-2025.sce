@@ -346,6 +346,11 @@ tol = 0.01
 for k = 1:max_iter
     // COMPLETAR EL METOD0 del GRADIENTE DESCENDENTE para minimizar 'fobj' 
 
+    g = grad_f(X)
+    ng = norm(g)
+    if ng < tol break; end
+    X = X - alpha*g
+    
 
 
 
