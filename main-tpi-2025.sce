@@ -279,18 +279,38 @@ endfunction
 
 function dfx1 = Dfx1(X)
     // Calcular derivada de fobj() en respecto de x1
+    h = 0.01
+    X_plus = X
+    X_plus(1) = X(1) + h
+    
+    dfx1 = (fobj(X_plus) - fobj(X)) / h
 endfunction
 
 function dfx2 = Dfx2(X)
     // Calcular derivada de fobj() en respecto de x2 
+    h = 0.01
+    X_plus = X
+    X_plus(2) = X(2) + h
+    
+    dfx2 = (fobj(X_plus) - fobj(X)) / h
 endfunction
 
 function dfx3 = Dfx3(X)
     // Calcular derivada de fobj() en respecto de x3 
+    h = 0.01
+    X_plus = X
+    X_plus(3) = X(3) + h
+    
+    dfx3 = (fobj(X_plus) - fobj(X)) / h
 endfunction
 
 function dfx4 = Dfx4(X)
     // Calcular derivada de fobj() en respecto de x4 
+    h = 0.01
+    X_plus = X
+    X_plus(4) = X(4) + h
+    
+    dfx4 = (fobj(X_plus) - fobj(X)) / h
 endfunction
 
 // DEFINICION DE LA FUNCIÓN GRADIENTE
@@ -310,7 +330,7 @@ max_iter = 100
 tol = 0.01
 
 for k = 1:max_iter
-    // COMPLETAR EL METOD0 del GRADIENTE DESCENDENTE para minimizar 'fobj'    
+    // COMPLETAR EL METOD0 del GRADIENTE DESCENDENTE para minimizar 'fobj'
 end
 
 // Presentar nueva solución
