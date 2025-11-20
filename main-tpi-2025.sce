@@ -216,17 +216,33 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
     end
 
     
+    function integral = funcion_integral(t, Q)
+    n = length(t);
+    if n <= 1 then
+        integral = 0;
+        return;
+    end
+    h = t(2) - t(1);
+    suma = 0;
+    for i = 2:n-1
+        suma = suma + Q(i);
+    end
+    integral = h * (Q(1) + 2*suma + Q(n)) / 2;
+endfunction
+
     // INTEGRACION DE LA ENERGIA DE CALEFACCION A LO LARGO DEL DIA (JOULES)
     energiaCalefaccionDiaria = 0
     // Programar una funcion_integral(t,Qc), que calcule la Energía total 
     // de Calefacción mediente la integral de Qc en funcion de t // [Joules]
 
-    
+    energiaCalefaccionDiaria   = funcion_integral(t, Qc);
     
     // INTEGRACION DE LA ENERGIA DE REFRIGERACION A LO LARGO DEL DIA (JOULES)
     energiaRefrigeracionDiaria = 0 // [Joules]
     // Programar una funcion_integral(t,Qr), que calcule la Energía total 
     // de Refrigeración mediente la integral de Qr en funcion de t // [Joules]
+
+    energiaRefrigeracionDiaria = funcion_integral(t, Qr);
     
     energiaCalefaccionMensual_Wh = energiaCalefaccionDiaria * 30 / 3600
     
