@@ -121,6 +121,15 @@ function dT = f(t,T_int, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref)
     dT = Q_total(t,T_int, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref) / capacidadCalorificaEdificio;
 endfunction
 
+function E = funcion_integral(t,Q)
+    n = length(t);
+    E = 0;
+    for i = 1:n-1
+        dt = t(i+1)-t(i);
+        prom = (Q(i+1) + Q(i))/2;
+        E = E + (dt * prom);
+    end
+endfunction
 
 function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
 
