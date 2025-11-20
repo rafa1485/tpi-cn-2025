@@ -103,21 +103,37 @@ function Qe = Q_edif(t, T_int)
     Qe = conductanciaTotalEdificacion * (T_ext - T_int)
 endfunction
 
-function Qc = Q_calef(t,hr_ini_cal,hr_cal)
+function Qc = Q_calef(t, T_int, hr_ini_cal, hr_cal)
     hr_fin_cal = hr_ini_cal + hr_cal
+    T_setpoint = 20;  // Temperatura objetivo [°C]
+    T_histeresis = 2; // Banda de histéresis [°C]
+    
+    // Solo operar en el horario permitido
     if (t/3600) >= hr_ini_cal && (t/3600) <= hr_fin_cal then
-        Qc = potenciaCalefaccion;  // Calefacción ENCENDIDA entre hr_ini_cal y hr_fin_cal
+        // Control por temperatura: encender si T < 20-2 = 18°C
+        if T_int < (T_setpoint - T_histeresis) then
+            Qc = potenciaCalefaccion;
+        else
+            Qc = 0;
+        end
     else
-        Qc = 0;  // Calefacción APAGADA fuera del rango
+        Qc = 0;
     end
 endfunction
 
-function Qr = Q_refri(t,hr_ini_ref,hr_ref)
+function Qr = Q_refri(t, T_int, hr_ini_ref, hr_ref)
     hr_fin_ref = hr_ini_ref + hr_ref
-    if t <= hr_ini_ref*3600 then
-        Qr = 0;
-    elseif t <= hr_fin_ref*3600 then
-        Qr = potenciaRefrigeracion;
+    T_setpoint = 20;  // Temperatura objetivo [°C]
+    T_histeresis = 2; // Banda de histéresis [°C]
+    
+    // Solo operar en el horario permitido
+    if (t/3600) >= hr_ini_ref && (t/3600) <= hr_fin_ref then
+        // Control por temperatura: encender si T > 20+2 = 22°C
+        if T_int > (T_setpoint + T_histeresis) then
+            Qr = -potenciaRefrigeracion;  // Negativo porque EXTRAE calor del edificio
+        else
+            Qr = 0;
+        end
     else
         Qr = 0;
     end
@@ -127,8 +143,8 @@ endfunction
 function Qt = Q_total(t, T_int, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref)
     Qp = Q_piso(T_int);
     Qe = Q_edif(t,T_int);
-    Qc = Q_calef(t,hr_ini_cal,hr_cal)
-    Qr = Q_refri(t,hr_ini_ref,hr_ref)
+    Qc = Q_calef(t, T_int, hr_ini_cal, hr_cal)  // Ahora recibe T_int
+    Qr = Q_refri(t, T_int, hr_ini_ref, hr_ref)  // Ahora recibe T_int
     Qt = Qp + Qe + Qc + Qr;
 endfunction
 
@@ -137,7 +153,7 @@ function dT = f(t,T_int, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref)
 endfunction
 
 
-function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
+function costoClimatizacion = funcion_costo_climatizacion(X, graficar, titulo)
 
     
     // DEFINICION VARIABLES DE CONTROL TEMPERATURA
@@ -180,12 +196,13 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
     
     
     // CALCULO DEL PERFIL DE CALOR DE CALEFACCION Y REFRIGERACION
-    Qc = [Q_calef(0)]
-    Qr = [Q_refri(0)]
+    // Para gráficos y costos usamos valor absoluto (potencia consumida)
+    Qc = [Q_calef(0, T(1), hr_ini_cal, hr_cal)]
+    Qr = [abs(Q_refri(0, T(1), hr_ini_ref, hr_ref))]  // Valor absoluto para graficar
     
     for i=1:N,
-        Qc = [Qc, Q_calef(t(i), hr_ini_cal, hr_cal)];
-        Qr = [Qr, Q_refri(t(i), hr_ini_ref, hr_ref)]
+        Qc = [Qc, Q_calef(t(i), T(i), hr_ini_cal, hr_cal)];
+        Qr = [Qr, abs(Q_refri(t(i), T(i), hr_ini_ref, hr_ref))]  // Valor absoluto para graficar
     end
 
     
