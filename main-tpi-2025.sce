@@ -15,7 +15,7 @@ function grafico_salida(t,T,Qc,Qr,costoRefrigeracion,costoCalefaccion)
     
     //Perfil potencia Calefacción
     subplot(4,1,2)
-    plot(Qc,'r')
+    plot(t/3600,Qc,'r')
     xlabel("Tiempo [h]")
     ylabel("Potencia calefacción [W]")
     title("Perfil de potencia de calefacción")
@@ -24,7 +24,7 @@ function grafico_salida(t,T,Qc,Qr,costoRefrigeracion,costoCalefaccion)
     //    Qr es negativo en el modelo (saca calor),
     //    pero graficamos su magnitud para que se vea en 0..Pmax
     subplot(4,1,3)
-    plot(abs(Qr),'b')
+    plot(t/3600,abs(Qr),'b')
      xlabel("Tiempo [h]")
     ylabel("Potencia refrigeración [W]")
     title("Perfil de potencia de refrigeración")
@@ -254,7 +254,7 @@ endfunction
     
     costoClimatizacion = costoCalefaccion + costoRefrigeracion
     
-    disp(costoClimatizacion)
+    //disp(costoClimatizacion)
 
     if graficar then
         grafico_salida(t,T,Qc,Qr,costoRefrigeracion,costoCalefaccion)
@@ -322,10 +322,6 @@ function fcc = fobj(X)
     pen_cal = epsilon3 * (1 / X(2));
     pen_ref = epsilon4 * (1 / X(4));
 
-    fcc = funcion_costo_climatizacion(X, %F) ...
-        + epsilon1 * diferencia_cuad_inicio_fin ...
-        + epsilon2 * varianza_temperatura ...
-        + pen_cal + pen_ref;
 endfunction
 
 // DEFINICION DE DERIVADAS PARCIALES NUMERICAS
@@ -359,9 +355,6 @@ function dfx4 = Dfx4(X)
     dfx4 = (fobj(Xp) - fobj(Xm)) / (2*h_pert);
 endfunction
 
-function g = grad_f(X)
-    g = [Dfx1(X); Dfx2(X); Dfx3(X); Dfx4(X)];
-endfunction
 
 
 // DEFINICION DE LA FUNCIÓN GRADIENTE
@@ -378,8 +371,9 @@ endfunction
 // GRADIENTE DESCENDENTE
 alpha = 0.01
 max_iter = 100
-tol = 0.01
+tolerancia = 0.01
 
+printf("\n*** INICIO OPTIMIZACIÓN ***\n");
 for k = 1:max_iter
     grad = grad_f(X);
     norma_grad = norm(grad);
@@ -401,6 +395,7 @@ for k = 1:max_iter
     Xn(4) = max(0.1, min(24, Xn(4)));
 
     X = Xn;
+     printf("Iteración %d | Costo: %f | Norma Gradiente: %e\n", k, fobj(X), norma_grad);s
 end
 
 // Presentar nueva solución
