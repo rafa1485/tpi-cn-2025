@@ -77,7 +77,7 @@ function T_ext = T_exterior(t)
 endfunction
 
 function Qp = Q_piso(T_int)
-    Qp = conductanciaPiso * (15 - T_int);
+    Qp = conductanciaPiso * (15 - T_int); // Aca se considera que la Temperatura del suelo es constante e igual a 15 °C
 endfunction
 
 function Qe = Q_edif(t, T_int)
@@ -289,18 +289,42 @@ endfunction
 
 function dfx1 = Dfx1(X)
     // Calcular derivada de fobj() en respecto de x1
+    h = 0.01;
+    X1_plus = X;
+    X1_plus(1) = X1_plus(1) + h;
+    X1_minus = X;
+    X1_minus(1) = X1_minus(1) - h;
+    dfx1 = (fobj(X1_plus) - fobj(X1_minus)) / (2 * h);
 endfunction
 
 function dfx2 = Dfx2(X)
-    // Calcular derivada de fobj() en respecto de x2 
+    // Calcular derivada de fobj() en respecto de x2
+    h = 0.01;
+    X2_plus = X;
+    X2_plus(2) = X2_plus(2) + h;
+    X2_minus = X;
+    X2_minus(2) = X2_minus(2) - h;
+    dfx2 = (fobj(X2_plus) - fobj(X2_minus)) / (2 * h);
 endfunction
 
 function dfx3 = Dfx3(X)
-    // Calcular derivada de fobj() en respecto de x3 
+    // Calcular derivada de fobj() en respecto de x3
+    h = 0.01;
+    X3_plus = X;
+    X3_plus(3) = X3_plus(3) + h;
+    X3_minus = X;
+    X3_minus(3) = X3_minus(3) - h;
+    dfx3 = (fobj(X3_plus) - fobj(X3_minus)) / (2 * h);
 endfunction
 
 function dfx4 = Dfx4(X)
     // Calcular derivada de fobj() en respecto de x4 
+    h = 0.01;
+    X4_plus = X;
+    X4_plus(4) = X4_plus(4) + h;
+    X4_minus = X;
+    X4_minus(4) = X4_minus(4) - h;
+    dfx4 = (fobj(X4_plus) - fobj(X4_minus)) / (2 * h);
 endfunction
 
 // DEFINICION DE LA FUNCIÓN GRADIENTE
@@ -312,15 +336,13 @@ function g = grad_f(X)
     g = [d1; d2; d3; d4]
 endfunction
 
-
-
 // GRADIENTE DESCENDENTE
 alpha = 0.01
 max_iter = 100
 tol = 0.01
 
 for k = 1:max_iter
-    // COMPLETAR EL METOD0 del GRADIENTE DESCENDENTE para minimizar 'fobj'    
+    // COMPLETAR EL METOD0 del GRADIENTE DESCENDENTE para minimizar 'fobj'   
 end
 
 // Presentar nueva solución
