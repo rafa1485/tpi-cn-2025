@@ -40,7 +40,7 @@ conductanciaPiso = superficiePiso*coeficienteConductanciaPiso // [W/K]
 
 potenciaCalefaccionUnitaria = 10 // Potencia de calefacción por metro cuadrado de superficie construida [W/m2]
 potenciaCalefaccion = potenciaCalefaccionUnitaria * superficiePiso // [W]
-precioEnergiaCalefaccion = 0.0000139 // [dólares/Wh]
+precioEnergiaCalefaccion = 0.045/1000 // [dólares/Wh]
 
 // CALCULO DEL COSTO DE LA ENERGIA DE CALEFACCION
 //poderCalorificoGas = 10.8 //[kWh/m3]
@@ -50,7 +50,7 @@ precioEnergiaCalefaccion = 0.0000139 // [dólares/Wh]
 //precio_energia_Gas_USD_kWh = precio_energia_Gas_Pesos_kWh / precioDolar_Pesos
 //precio_energia_Gas_USD_Wh = precio_energia_Gas_USD_kWh / 1000
 
-potenciaRefrigeracionUnitaria = 3 // Potencia de refrigeración por metro cuadrado de superficie construida [W/m2]
+potenciaRefrigeracionUnitaria = 5 // Potencia de refrigeración por metro cuadrado de superficie construida [W/m2]
 potenciaRefrigeracion = potenciaRefrigeracionUnitaria * superficiePiso // [W]
 precioEnergiaRefrigeracion = 0.12/1000 // [dólares/Wh]
 
@@ -59,7 +59,7 @@ capacidadCalorificaEspecifica = 800 // Capacidad Calorífica por kg del material
 capacidadCalorificaUnitaria = masaUnitaria * capacidadCalorificaEspecifica // [J/K/m2]
 capacidadCalorificaEdificio = capacidadCalorificaUnitaria * superficiePiso // [J/K]
 
-h = 19.5 // coeficiente de transferencia de calor por convección de la edificación a la velocidad de 3 m/s del aire
+h = 18 // coeficiente de transferencia de calor por convección de la edificación a la velocidad de 3 m/s del aire
 conductanciaConveccionEdificacion = h * superficieEdificacion;
 
 function T_ext = T_exterior(t)
