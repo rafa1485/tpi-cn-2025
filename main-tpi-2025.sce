@@ -1,8 +1,6 @@
 clear
 clc
 
-
-// DEFINICION PARA SALIDA GRAFICA
 function grafico_salida(t,T,Qc,Qr,costoRefrigeracion,costoCalefaccion)
     figure()
     subplot(4,1,1)
@@ -18,6 +16,7 @@ function grafico_salida(t,T,Qc,Qr,costoRefrigeracion,costoCalefaccion)
     xstring(0.1,0.33,"Costo Refrigeración= U$D"+string(costoRefrigeracion),0,0)
     xstring(0.1,0.66,"Costo Calefacción= U$D"+string(costoCalefaccion),0,0)
 endfunction
+
 
 TAmbMax = 24 //"Máxima Temperatura Ambiente"
 TAmbMin = 10 //"Mínima Temperatura Ambiente"
@@ -61,6 +60,7 @@ capacidadCalorificaEdificio = capacidadCalorificaUnitaria * superficiePiso // [J
 
 h = 18 // coeficiente de transferencia de calor por convección de la edificación a la velocidad de 3 m/s del aire
 conductanciaConveccionEdificacion = h * superficieEdificacion;
+
 
 function T_ext = T_exterior(t)
     if t <= InicioSubida*3600 then
@@ -142,25 +142,17 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
     
     
     for i=1:N,
-    // COMPLETAR METOD0 DE EULER
-    // Al finalizar el METOD0 de Euler se debe tener un Vector FILA 'T'
-    // con las temperaturas para cada tiempo en SEGUNDOS que se guarda en 
-    // el vector 't'
-    
-    end
-    
-    
-    // CALCULO DEL PERFIL DE CALOR DE CALEFACCION Y REFRIGERACION
-    Qc = [Q_calef(0)]
-    Qr = [Q_refri(0)]
-    
-    for i=1:N,
-        Qc = [Qc, Q_calef(t(i), hr_ini_cal, hr_cal)];
-        Qr = [Qr, Q_refri(t(i), hr_ini_ref, hr_ref)]
-    end
+    tc = t(i);                                // tiempo actual (s)
+    k = f(tc, T(i), hr_ini_cal, hr_cal, hr_ini_ref, hr_ref); // derivada dT/dt
+    t = [t, tc+Dt];                           // nuevo tiempo
+    T = [T, T(i) + Dt * k];                   // Euler: T_{n+1} = T_n + Dt * k
 
+    // calculo de Qc, Qr en el instante recién creado t(i+1)
+    Qc = [Qc, Q_calef(t(i+1),hr_ini_cal,hr_cal)];
+    Qr = [Qr, Q_refri(t(i+1),hr_ini_ref,hr_ref)];
+    end
     
-    // INTEGRACION DE LA ENERGIA DE CALEFACCION A LO LARGO DEL DIA (JOULES)
+       // INTEGRACION DE LA ENERGIA DE CALEFACCION A LO LARGO DEL DIA (JOULES)
     energiaCalefaccionDiaria = 0
     // Programar una funcion_integral(t,Qc), que calcule la Energía total 
     // de Calefacción mediente la integral de Qc en funcion de t // [Joules]
