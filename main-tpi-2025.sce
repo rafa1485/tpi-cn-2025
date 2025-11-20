@@ -317,6 +317,15 @@ function fcc = fobj(X)
     diferencia_cuad_inicio_fin = (temperatura_diaria($) - temperatura_diaria(1))^2
     varianza_temperatura = stdev(temperatura_diaria)^2
     fcc = funcion_costo_climatizacion(X, %F) + epsilon1 * diferencia_cuad_inicio_fin + epsilon2 * varianza_temperatura + epsilon3*1/X(2) + epsilon4*1/X(4)
+
+// Penalización suave por duraciones muy cortas
+    pen_cal = epsilon3 * (1 / X(2));
+    pen_ref = epsilon4 * (1 / X(4));
+
+    fcc = funcion_costo_climatizacion(X, %F) ...
+        + epsilon1 * diferencia_cuad_inicio_fin ...
+        + epsilon2 * varianza_temperatura ...
+        + pen_cal + pen_ref;
 endfunction
 
 // DEFINICION DE DERIVADAS PARCIALES NUMERICAS
@@ -372,10 +381,38 @@ max_iter = 100
 tol = 0.01
 
 for k = 1:max_iter
-    // COMPLETAR EL METOD0 del GRADIENTE DESCENDENTE para minimizar 'fobj'    
+    grad = grad_f(X);
+    norma_grad = norm(grad);
+   
+
+    printf("Iter %3d | f(X) = %10.4f | ||grad|| = %8.4f\n", k, fobj(X), norma_grad);
+
+    if norma_grad < tolerancia then
+        printf("Convergencia alcanzada en iteración %d\n", k);
+        break
+    end
+
+    Xn = X - alpha*grad;
+
+    // Proyectar a dominio válido
+    Xn(1) = max(0, min(24, Xn(1)));
+    Xn(2) = max(0.1, min(24, Xn(2)));
+    Xn(3) = max(0, min(24, Xn(3)));
+    Xn(4) = max(0.1, min(24, Xn(4)));
+
+    X = Xn;
 end
 
 // Presentar nueva solución
+printf("\n=== SOLUCIÓN OPTIMIZADA ===\n");
+printf("Inicio Calefacción:    %.2f h\n", X(1));
+printf("Duración Calefacción:  %.2f h\n", X(2));
+printf("Inicio Refrigeración:  %.2f h\n", X(3));
+printf("Duración Refrigeración:%.2f h\n", X(4));
+
+graficar = %T;
+costo_opt = funcion_costo_climatizacion(X, graficar);
+printf("Costo mínimo mensual aprox: U$D %.4f\n", costo_opt);
 
 
 printf("\nMinimo aproximado en X = [%f, %f, %f, %f]\n", X(1), X(2), X(3), X(4));
