@@ -7,12 +7,18 @@ function grafico_salida(t,T,Qc,Qr,costoRefrigeracion,costoCalefaccion)
     figure()
     subplot(4,1,1)
     plot(t/3600,T)
+    xlabel("Hora del día")
+    ylabel("T_int [°C]")
     
     subplot(4,1,2)
-    plot(Qc,'r')
-    
+    plot(t/3600,Qc,'r')
+    xlabel("Hora del día")
+    ylabel("Qc [W]")
+
     subplot(4,1,3)
     plot(Qr,'b')
+    xlabel("Hora del día")
+    ylabel("Qr [W]")
     
     subplot(4,1,4)
     xstring(0.1,0.33,"Costo Refrigeración= U$D"+string(costoRefrigeracion),0,0)
@@ -143,7 +149,7 @@ function I = funcion_integral(t, Q)
     end
 
     // Regla del trapecio
-    I = (t_max - t_min) * sum(Q .* Vector_Coeficientes) / (2 * N);
+    I = (t_max - t_min) * sum(Q .* Vector_Coeficientes) / (2 * N);
 endfunction
 
 function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
