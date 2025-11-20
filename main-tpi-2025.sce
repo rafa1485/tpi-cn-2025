@@ -3,20 +3,35 @@ clc
 
 
 // DEFINICION PARA SALIDA GRAFICA
-function grafico_salida(t,T,Qc,Qr,costoRefrigeracion,costoCalefaccion)
-    figure()
+function grafico_salida(t,T,Qc,Qr,costoRefrigeracion,costoCalefaccion,titulo)
+    f = figure()
+    f.figure_name = titulo
+    
     subplot(4,1,1)
     plot(t/3600,T)
+    xlabel('Tiempo [horas]')
+    ylabel('Temperatura [°C]')
+    title('Evolución de la Temperatura Interior')
+    xgrid()
     
     subplot(4,1,2)
-    plot(Qc,'r')
+    plot(t/3600,Qc,'r')
+    xlabel('Tiempo [horas]')
+    ylabel('Potencia [W]')
+    title('Perfil de Calefacción')
+    xgrid()
     
     subplot(4,1,3)
-    plot(Qr,'b')
+    plot(t/3600,Qr,'b')
+    xlabel('Tiempo [horas]')
+    ylabel('Potencia [W]')
+    title('Perfil de Refrigeración')
+    xgrid()
     
     subplot(4,1,4)
-    xstring(0.1,0.33,"Costo Refrigeración= U$D"+string(costoRefrigeracion),0,0)
-    xstring(0.1,0.66,"Costo Calefacción= U$D"+string(costoCalefaccion),0,0)
+    xstring(0.1,0.33,"Costo Refrigeración= U$D "+string(costoRefrigeracion),0,0)
+    xstring(0.1,0.66,"Costo Calefacción= U$D "+string(costoCalefaccion),0,0)
+    xstring(0.1,0.1,"Costo Total= U$D "+string(costoCalefaccion+costoRefrigeracion),0,0)
 endfunction
 
 TAmbMax = 24 //"Máxima Temperatura Ambiente"
@@ -134,8 +149,11 @@ function integral = funcion_integral(t, y)
 endfunction
 
 
-function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
+function costoClimatizacion = funcion_costo_climatizacion(X, graficar, titulo)
 
+    if ~exists('titulo','local') then
+        titulo = "Resultados de Climatización"
+    end
     
     // DEFINICION VARIABLES DE CONTROL TEMPERATURA
     hr_ini_cal = X(1)
@@ -199,10 +217,10 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
     
     costoClimatizacion = costoCalefaccion + costoRefrigeracion
     
-    disp(costoClimatizacion)
+    //disp(costoClimatizacion)
 
     if graficar then
-        grafico_salida(t,T,Qc,Qr,costoRefrigeracion,costoCalefaccion)
+        grafico_salida(t,T,Qc,Qr,costoRefrigeracion,costoCalefaccion,titulo)
     end
 endfunction
 
@@ -240,28 +258,31 @@ function temperatura = funcion_perfil_temperatura(X)
 endfunction
 
 // PROGAMACION OPTIMIZACIÓN CON GRADIETNE DESCENDENTE
-inicioCalefaccion = 0 // "Hora a la que se enciende la Refrigeracion"
-finCalefaccion = 24 // "Hora a la que se apaga la refrigeración"
-inicioRefrigeracion = 8 // "Hora a la que se enciende la Refrigeracion"
-finRefrigeracion = 6 // "Hora a la que se apaga la refrigeración"
+inicioCalefaccion = 2 // "Hora a la que se enciende la calefacción"
+duracionCalefaccion = 12 // "Duración de la calefacción"
+inicioRefrigeracion = 11 // "Hora a la que se enciende la refrigeración"
+duracionRefrigeracion = 5 // "Duración de la refrigeración"
 
 X = [inicioCalefaccion;
-     finCalefaccion;
+     duracionCalefaccion;
      inicioRefrigeracion;
-     finRefrigeracion]
-     
+     duracionRefrigeracion]
+
+printf("\n========== SOLUCIÓN INICIAL ==========\n")
+printf("Inicio Calefacción: %.2f horas\n", X(1))
+printf("Duración Calefacción: %.2f horas\n", X(2))
+printf("Inicio Refrigeración: %.2f horas\n", X(3))
+printf("Duración Refrigeración: %.2f horas\n", X(4))
+
+// Mostrar solución inicial con gráfico
 graficar = %T // %T : graficar , %F : NO graficar
-funcion_costo_climatizacion(X, graficar);
+costo_inicial = funcion_costo_climatizacion(X, graficar, "SOLUCIÓN INICIAL");
+printf("Costo Mensual Inicial: U$D %.5f\n", costo_inicial)
+printf("\n")
 
 function fcc = fobj(X)
-    epsilon1 = 10
-    epsilon2 = 100
-    epsilon3 = 0.1
-    epsilon4 = 0.1
-    temperatura_diaria = funcion_perfil_temperatura(X)
-    diferencia_cuad_inicio_fin = (temperatura_diaria($) - temperatura_diaria(1))^2
-    varianza_temperatura = stdev(temperatura_diaria)^2
-    fcc = funcion_costo_climatizacion(X, %F) + epsilon1 * diferencia_cuad_inicio_fin + epsilon2 * varianza_temperatura + epsilon3*1/X(2) + epsilon4*1/X(4)
+    // Optimizar solo el costo de climatización
+    fcc = funcion_costo_climatizacion(X, %F)
 endfunction
 
 // DEFINICION DE DERIVADAS PARCIALES NUMERICAS
@@ -344,7 +365,12 @@ end
 
 // Presentar nueva solución
 
+printf("\n========== SOLUCIÓN CALCULADA ==========\n")
+printf("Inicio Calefacción: %.2f horas\n", X(1))
+printf("Duración Calefacción: %.2f horas\n", X(2))
+printf("Inicio Refrigeración: %.2f horas\n", X(3))
+printf("Duración Refrigeración: %.2f horas\n", X(4))
 
-printf("\nMinimo aproximado en X = [%f, %f, %f, %f]\n", X(1), X(2), X(3), X(4));
 graficar = %T // %T : graficar , %F : NO graficar
-funcion_costo_climatizacion(X, graficar);
+costo_final = funcion_costo_climatizacion(X, graficar, "SOLUCIÓN CALCULADA");
+printf("Costo Mensual Óptimo: U$D %.5f\n", costo_final)
