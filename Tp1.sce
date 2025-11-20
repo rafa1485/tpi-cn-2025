@@ -2,21 +2,40 @@ clear
 clc
 
 
-// DEFINICION PARA SALIDA GRAFICA
+// DEFINICION PARA SALIDA GRAFICA (MODIFICADA CON ETIQUETAS DE EJES)
 function grafico_salida(t,T,Qc,Qr,costoRefrigeracion,costoCalefaccion)
     figure()
+    
+    // 1. TEMPERATURA INTERNA
     subplot(4,1,1)
     plot(t/3600,T)
+    title("Evolución de la Temperatura Interna")
+    xlabel("Tiempo (h)")
+    ylabel("Temperatura (°C)")
     
+    // 2. POTENCIA DE CALEFACCIÓN
     subplot(4,1,2)
     plot(Qc,'r')
+    title("Potencia de Calefacción (Qc)")
+    xlabel("Pasos de Tiempo") // Mantener en Pasos de Tiempo para Q, o usar t/3600
+    ylabel("Potencia (W)")
     
+    // 3. POTENCIA DE REFRIGERACIÓN
     subplot(4,1,3)
     plot(Qr,'b')
+    title("Potencia de Refrigeración (Qr)")
+    xlabel("Pasos de Tiempo")
+    ylabel("Potencia (W)")
     
+    // 4. COSTOS MENSUALES
     subplot(4,1,4)
+    // Mostrando el Costo Total en una posición adicional
+    costoTotal = costoRefrigeracion + costoCalefaccion;
+    xstring(0.1,0.1,"Costo Total Climatización= U$D"+string(costoTotal),0,0) // Costo Total
     xstring(0.1,0.33,"Costo Refrigeración= U$D"+string(costoRefrigeracion),0,0)
     xstring(0.1,0.66,"Costo Calefacción= U$D"+string(costoCalefaccion),0,0)
+    xlabel("Costos Mensuales")
+    ylabel(" ") // Dejar el eje Y vacío o con un comentario si se desea
 endfunction
 
 TAmbMax = 24 //"Máxima Temperatura Ambiente"
@@ -152,7 +171,7 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
     t = [0]
     N = (24 * 3600)/ Dt;
     for i=1:N,
-    // COMPLETAR METOD0 DE EULER
+    // IMPLEMENTACION DEL METODO DE EULER
         t_nuevo = t(i) + Dt;
         t = [t, t_nuevo];
         T_i = T(i) + Dt * f(t(i), T(i), hr_ini_cal, hr_cal, hr_ini_ref, hr_ref);
@@ -183,7 +202,9 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
     
     costoCalefaccion = precioEnergiaCalefaccion * energiaCalefaccionMensual_Wh
     
-    costoRefrigeracion = precioEnergiaRefrigeracion * energiaRefrigeracionDiaria * 30 / 3600 // La conversion a Wh se hace dentro del factor (30/3600)
+    // Corregida la conversión de unidades (multiplicación por 30 días y división por 3600 J/Wh)
+    energiaRefrigeracionMensual_Wh = energiaRefrigeracionDiaria * 30 / 3600
+    costoRefrigeracion = precioEnergiaRefrigeracion * energiaRefrigeracionMensual_Wh
     
     costoClimatizacion = costoCalefaccion + costoRefrigeracion
     
@@ -211,7 +232,7 @@ function temperatura = funcion_perfil_temperatura(X)
     t = [0]
     N = (24 * 3600)/ Dt;
     for i=1:N,
-    // COMPLETAR METOD0 DE EULER
+    // IMPLEMENTACION DEL METODO DE EULER
         t_nuevo = t(i) + Dt;
         t = [t, t_nuevo];
         T_i = T(i) + Dt * f(t(i), T(i), hr_ini_cal, hr_cal, hr_ini_ref, hr_ref);
@@ -294,7 +315,7 @@ max_iter = 100
 tol = 0.01
 
 for k = 1:max_iter
-    // COMPLETAR EL METOD0 del GRADIENTE DESCENDENTE para minimizar 'fobj'
+    // IMPLEMENTACION DEL METODO del GRADIENTE DESCENDENTE
     gradiente = grad_f(X);
     X_nuevo = X - alpha * gradiente;
     
