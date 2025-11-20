@@ -123,7 +123,25 @@ endfunction
 
 // Función para calcular la integral mediante el método del trapecio
 function I = funcion_integral(t, Q)
-    I = trapz(t, Q); // Utiliza la función trapz de Scilab para calcular la integral
+    N = length(t) - 1;
+    t_min = t(1);
+    t_max = t($);
+
+    // Construcción del vector de coeficientes tipo trapecio
+    Vector_Coeficientes = [];
+    for n = 0:N
+        if n == 0 then
+            coef = 1;
+        elseif n == N then
+            coef = 1;
+        else
+            coef = 2;
+        end
+        Vector_Coeficientes = [Vector_Coeficientes, coef];
+    end
+
+    // Regla del trapecio
+    I = (t_max - t_min) * sum(Q .* Vector_Coeficientes) / (2 * N);
 endfunction
 
 function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
