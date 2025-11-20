@@ -59,7 +59,7 @@ capacidadCalorificaEspecifica = 800 // Capacidad Calorífica por kg del material
 capacidadCalorificaUnitaria = masaUnitaria * capacidadCalorificaEspecifica // [J/K/m2]
 capacidadCalorificaEdificio = capacidadCalorificaUnitaria * superficiePiso // [J/K]
 
-h = 18 // coeficiente de transferencia de calor por convección de la edificación a la velocidad de 3 m/s del aire
+h = 19.5 // coeficiente de transferencia de calor por convección de la edificación a la velocidad de 3 m/s del aire
 conductanciaConveccionEdificacion = h * superficieEdificacion;
 
 function T_ext = T_exterior(t)
