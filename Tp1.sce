@@ -122,9 +122,6 @@ function dT = f(t,T_int, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref)
     dT = Q_total(t,T_int, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref) / capacidadCalorificaEdificio;
 endfunction
 
-// **********************************************
-// NUEVA FUNCIÓN DE INTEGRACIÓN NUMÉRICA (Regla del Trapecio)
-// **********************************************
 function integral = funcion_integral(t, Q)
     Dt = t(2) - t(1); // Paso de tiempo
     N = length(Q);
@@ -239,6 +236,7 @@ X = [inicioCalefaccion;
      
 graficar = %T // %T : graficar , %F : NO graficar
 funcion_costo_climatizacion(X, graficar);
+
 function fcc = fobj(X)
     epsilon1 = 10
     epsilon2 = 100
@@ -253,19 +251,31 @@ endfunction
 // DEFINICION DE DERIVADAS PARCIALES NUMERICAS
 
 function dfx1 = Dfx1(X)
-    // Calcular derivada de fobj() en respecto de x1
+    h = 1e-4 // Paso de diferencia finita
+    Xh = X;
+    Xh(1) = X(1) + h;
+    dfx1 = (fobj(Xh) - fobj(X)) / h;
 endfunction
 
 function dfx2 = Dfx2(X)
-    // Calcular derivada de fobj() en respecto de x2 
+    h = 1e-4 // Paso de diferencia finita
+    Xh = X;
+    Xh(2) = X(2) + h;
+    dfx2 = (fobj(Xh) - fobj(X)) / h;
 endfunction
 
 function dfx3 = Dfx3(X)
-    // Calcular derivada de fobj() en respecto de x3 
+    h = 1e-4 // Paso de diferencia finita
+    Xh = X;
+    Xh(3) = X(3) + h;
+    dfx3 = (fobj(Xh) - fobj(X)) / h;
 endfunction
 
 function dfx4 = Dfx4(X)
-    // Calcular derivada de fobj() en respecto de x4 
+    h = 1e-4 // Paso de diferencia finita
+    Xh = X;
+    Xh(4) = X(4) + h;
+    dfx4 = (fobj(Xh) - fobj(X)) / h;
 endfunction
 
 // DEFINICION DE LA FUNCIÓN GRADIENTE
