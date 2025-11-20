@@ -131,6 +131,7 @@ function E = funcion_integral(t,Q)
     end
 endfunction
 
+
 function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
 
     
@@ -155,7 +156,7 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
     // Al finalizar el METOD0 de Euler se debe tener un Vector FILA 'T'
     // con las temperaturas para cada tiempo en SEGUNDOS que se guarda en 
     // el vector 't'
-     tc = t(i);
+    tc = t(i);
     k = f(tc, T(i), hr_ini_cal, hr_cal, hr_ini_ref, hr_ref);
     t = [t, tc+Dt];
     T = [T, T(i)+Dt*k];
@@ -221,10 +222,10 @@ function temperatura = funcion_perfil_temperatura(X)
     // Al finalizar el METOD0 de Euler se debe tener un Vector FILA 'T'
     // con las temperaturas para cada tiempo en SEGUNDOS que se guarda en 
     // el vector 't'
-     tc = t(i);
-        k = f(tc, T(i), hr_ini_cal, hr_cal, hr_ini_ref, hr_ref);
-        t = [t, tc+Dt];
-        T = [T, T(i)+Dt*k];
+    tc = t(i);
+    k = f(tc, T(i), hr_ini_cal, hr_cal, hr_ini_ref, hr_ref);
+    t = [t, tc+Dt];
+    T = [T, T(i)+Dt*k];
     end
     
     temperatura = T
@@ -259,18 +260,34 @@ endfunction
 
 function dfx1 = Dfx1(X)
     // Calcular derivada de fobj() en respecto de x1
+    h=0.001
+    Xh = X;
+    Xh(1) = X_h(1) + h; 
+    dfx1 = (fobj(Xh) - fobj(X)) / h;
 endfunction
 
 function dfx2 = Dfx2(X)
-    // Calcular derivada de fobj() en respecto de x2 
+    // Calcular derivada de fobj() en respecto de x1
+    h=0.001
+    Xh = X;
+    Xh(2) = Xh(1) + h; 
+    dfx1 = (fobj(Xh) - fobj(X)) / h;
 endfunction
 
 function dfx3 = Dfx3(X)
-    // Calcular derivada de fobj() en respecto de x3 
+    // Calcular derivada de fobj() en respecto de x1
+    h=0.001
+    Xh = X;
+    Xh(3) = Xh(3) + h; 
+    dfx3 = (fobj(Xh) - fobj(X)) / h;
 endfunction
 
 function dfx4 = Dfx4(X)
-    // Calcular derivada de fobj() en respecto de x4 
+    // Calcular derivada de fobj() en respecto de x1
+    h=0.001
+    Xh = X;
+    Xh(4) = Xh(4) + h; 
+    dfx4 = (fobj(Xh) - fobj(X)) / h;
 endfunction
 
 // DEFINICION DE LA FUNCIÓN GRADIENTE
