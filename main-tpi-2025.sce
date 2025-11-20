@@ -38,9 +38,12 @@ espesorAislacionPiso = 0.05 // [m]
 coeficienteConductanciaPiso = 0.02 / espesorAislacionPiso // [W/K/m2]
 conductanciaPiso = superficiePiso*coeficienteConductanciaPiso // [W/K]
 
-potenciaCalefaccionUnitaria = 10 // Potencia de calefacción por metro cuadrado de superficie construida [W/m2]
+//potenciaCalefaccionUnitaria = 10 // Potencia de calefacción por metro cuadrado de superficie construida [W/m2]
+potenciaCalefaccionUnitaria = 10
+
 potenciaCalefaccion = potenciaCalefaccionUnitaria * superficiePiso // [W]
-precioEnergiaCalefaccion = 0.0000139 // [dólares/Wh]
+//precioEnergiaCalefaccion = 0.0000139 // [dólares/Wh]
+precioEnergiaCalefaccion = 0.045/1000
 
 // CALCULO DEL COSTO DE LA ENERGIA DE CALEFACCION
 //poderCalorificoGas = 10.8 //[kWh/m3]
@@ -50,7 +53,9 @@ precioEnergiaCalefaccion = 0.0000139 // [dólares/Wh]
 //precio_energia_Gas_USD_kWh = precio_energia_Gas_Pesos_kWh / precioDolar_Pesos
 //precio_energia_Gas_USD_Wh = precio_energia_Gas_USD_kWh / 1000
 
-potenciaRefrigeracionUnitaria = 3 // Potencia de refrigeración por metro cuadrado de superficie construida [W/m2]
+//potenciaRefrigeracionUnitaria = 3 // Potencia de refrigeración por metro cuadrado de superficie construida [W/m2]
+potenciaRefrigeracionUnitaria = 5
+
 potenciaRefrigeracion = potenciaRefrigeracionUnitaria * superficiePiso // [W]
 precioEnergiaRefrigeracion = 0.12/1000 // [dólares/Wh]
 
@@ -90,10 +95,10 @@ endfunction
 
 function Qc = Q_calef(t,hr_ini_cal,hr_cal)
     hr_fin_cal = hr_ini_cal + hr_cal
-    if (t/3600) >= hr_fin_cal && (t/3600) <= hr_ini_cal then
-        Qc = 0;
+    if (t/3600) >= hr_ini_cal & (t/3600) <= hr_fin_cal then
+        Qc = potenciaCalefaccion
     else
-        Qc = potenciaCalefaccion;
+        Qc = 0
     end
 endfunction
 
@@ -129,7 +134,7 @@ function I = funcion_integral(t,Q)
     end
 endfunction
 
-// Funcion de costo climatizacion
+// <<<<<<<<<< FUNCION DEL COSTO DE CLIMATIZACION >>>>>>>>>>
 function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
 
     
@@ -162,7 +167,7 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
     end
     
     
-    // CALCULO DEL PERFIL DE CALOR DE CALEFACCION Y REFRIGERACION
+    // <<<<<<<<<< CALCULO DEL PERFIL DE CALOR DE CALEFACCION Y REFRIGERACION >>>>>>>>>
     Qc = []
     Qr = []
     
@@ -243,19 +248,34 @@ X = [inicioCalefaccion;
 graficar = %T // %T : graficar , %F : NO graficar
 funcion_costo_climatizacion(X, graficar);
 
+//<<<<<<<<<<< FUNCION OBJETIVO >>>>>>>>>>>
 function fcc = fobj(X)
     epsilon1 = 10
     epsilon2 = 100
     epsilon3 = 0.1
     epsilon4 = 0.1
+    epsilon5 = 500
+
     temperatura_diaria = funcion_perfil_temperatura(X)
     diferencia_cuad_inicio_fin = (temperatura_diaria($) - temperatura_diaria(1))^2
     varianza_temperatura = stdev(temperatura_diaria)^2
-    fcc = funcion_costo_climatizacion(X, %F) + epsilon1 * diferencia_cuad_inicio_fin + epsilon2 * varianza_temperatura + epsilon3*1/X(2) + epsilon4*1/X(4)
+
+    // Penalización por violar el rango seguro (18–22°C)
+    penalizacion_fuera_rango = 0
+    for i = 1:length(temperatura_diaria)
+        // si es menor a 18 
+        if temperatura_diaria(i) < 18 then
+            penalizacion_fuera_rango = penalizacion_fuera_rango + (18 - temperatura_diaria(i))^2
+        // si es mayor a 22
+        elseif temperatura_diaria(i) > 22 then
+            penalizacion_fuera_rango = penalizacion_fuera_rango + (temperatura_diaria(i) - 22)^2
+        end
+    end
+
+    fcc = funcion_costo_climatizacion(X, %F) + epsilon1 * diferencia_cuad_inicio_fin + epsilon2 * varianza_temperatura + epsilon3*1/X(2) + epsilon4*1/X(4) + epsilon5 * penalizacion_fuera_rango
 endfunction
 
-// DEFINICION DE DERIVADAS PARCIALES NUMERICAS
-
+//<<<<<<<<<<<< DEFINICION DE DERIVADAS PARCIALES NUMERICAS >>>>>>>>>>>
 function dfx1 = Dfx1(X)
     // Calcular derivada de fobj() en respecto de x1
     h=0.001
@@ -284,7 +304,7 @@ function dfx4 = Dfx4(X)
     d=(fobj(Xh)-fobj(X))/h
 endfunction
 
-// DEFINICION DE LA FUNCIÓN GRADIENTE
+//<<<<<<<<<<<< DEFINICION DE LA FUNCIÓN GRADIENTE >>>>>>>>>>>
 function g = grad_f(X)
     d1 = Dfx1(X)
     d2 = Dfx2(X)
