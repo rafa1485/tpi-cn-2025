@@ -2,66 +2,65 @@ clear
 clc
 
 
-// DEFINICION PARA SALIDA GRAFICA
 function grafico_salida(t,T,Qc,Qr,costoRefrigeracion,costoCalefaccion)
-    figure()
+    figure();
     subplot(4,1,1)
-    plot(t/3600,T)
-    
+    plot(t/3600, T)
+    title("Temperatura Interior (°C)")
+
     subplot(4,1,2)
-    plot(Qc,'r')
-    
+    plot(t, Qc, 'r')
+    title("Potencia Calefacción (W)")
+
     subplot(4,1,3)
-    plot(Qr,'b')
-    
+    plot(t, Qr, 'b')
+    title("Potencia Refrigeración (W)")
+
     subplot(4,1,4)
-    xstring(0.1,0.33,"Costo Refrigeración= U$D"+string(costoRefrigeracion),0,0)
-    xstring(0.1,0.66,"Costo Calefacción= U$D"+string(costoCalefaccion),0,0)
+    xstring(0.1,0.6,"Costo Calefacción = USD"+string(costoCalefaccion))
+    xstring(0.1,0.3,"Costo Refrigeración = USD"+string(costoRefrigeracion))
 endfunction
 
-TAmbMax = 24 //"Máxima Temperatura Ambiente"
-TAmbMin = 10 //"Mínima Temperatura Ambiente"
-InicioSubida = 6 //"Hora en la que empieza a incrementar la temperatura"
-FinSubida = 11 //"Hora en la que empieza a incrementar la temperatura"
-InicioBajada = 14 //"Hora en la que empieza a decrementar la temperatura"
-FinBajada = 19 //"Hora en la que empieza a decrementar la temperatura"
+TAmbMax = 24;
+TAmbMin = 10;
+InicioSubida = 6;
+FinSubida = 11;
+InicioBajada = 14;
+FinBajada = 19;
 
+superficieEdificacion = 100;
+superficiePiso = 70;
 
-superficieEdificacion=100 // [m2]
-superficiePiso=70 // [m2]
+espesorEdificacion = 0.3;
+coeficienteConductanciaEdificacion = 0.4 / espesorEdificacion;
+conductanciaEdificacion = coeficienteConductanciaEdificacion * superficieEdificacion;
 
-espesorEdificacion = 0.3 // [m]
-coeficienteConductanciaEdificacion = 0.4 / espesorEdificacion // [W/K/m2]
-conductanciaEdificacion = coeficienteConductanciaEdificacion * superficieEdificacion // [W/K]
+espesorAislacionPiso = 0.05;
+coeficienteConductanciaPiso = 0.02 / espesorAislacionPiso;
+conductanciaPiso = superficiePiso*coeficienteConductanciaPiso;
 
-espesorAislacionPiso = 0.05 // [m]
-coeficienteConductanciaPiso = 0.02 / espesorAislacionPiso // [W/K/m2]
-conductanciaPiso = superficiePiso*coeficienteConductanciaPiso // [W/K]
+potenciaCalefaccionUnitaria = 10;
+potenciaCalefaccion = potenciaCalefaccionUnitaria * superficiePiso;
+precioEnergiaCalefaccion = 0.0000139;
 
-potenciaCalefaccionUnitaria = 10 // Potencia de calefacción por metro cuadrado de superficie construida [W/m2]
-potenciaCalefaccion = potenciaCalefaccionUnitaria * superficiePiso // [W]
-precioEnergiaCalefaccion = 0.0000139 // [dólares/Wh]
+potenciaRefrigeracionUnitaria = 3;
+potenciaRefrigeracion = potenciaRefrigeracionUnitaria * superficiePiso;
+precioEnergiaRefrigeracion = 0.12/1000;
 
-// CALCULO DEL COSTO DE LA ENERGIA DE CALEFACCION
+masaUnitaria = 150;
+capacidadCalorificaEspecifica = 800;
+capacidadCalorificaUnitaria = masaUnitaria * capacidadCalorificaEspecifica;
+capacidadCalorificaEdificio = capacidadCalorificaUnitaria * superficiePiso;
+
+h = 18;
+conductanciaConveccionEdificacion = h * superficieEdificacion;// CALCULO DEL COSTO DE LA ENERGIA DE CALEFACCION
+
 //poderCalorificoGas = 10.8 //[kWh/m3]
 //precioM3Gas = 180 // [$/m3]
 //precio_energia_Gas_Pesos_kWh = precioM3Gas / poderCalorificoGas / 0.8 // Considerando un rendimiento termico de 0.8
 //precioDolar_Pesos = 1500 
 //precio_energia_Gas_USD_kWh = precio_energia_Gas_Pesos_kWh / precioDolar_Pesos
 //precio_energia_Gas_USD_Wh = precio_energia_Gas_USD_kWh / 1000
-
-potenciaRefrigeracionUnitaria = 3 // Potencia de refrigeración por metro cuadrado de superficie construida [W/m2]
-potenciaRefrigeracion = potenciaRefrigeracionUnitaria * superficiePiso // [W]
-precioEnergiaRefrigeracion = 0.12/1000 // [dólares/Wh]
-
-masaUnitaria = 150 // Masa de edificio por unidad de superficie de construcción [kg/m2]
-capacidadCalorificaEspecifica = 800 // Capacidad Calorífica por kg del material de construcción [J/kg/K]
-capacidadCalorificaUnitaria = masaUnitaria * capacidadCalorificaEspecifica // [J/K/m2]
-capacidadCalorificaEdificio = capacidadCalorificaUnitaria * superficiePiso // [J/K]
-
-h = 18 // coeficiente de transferencia de calor por convección de la edificación a la velocidad de 3 m/s del aire
-conductanciaConveccionEdificacion = h * superficieEdificacion;
-
 function T_ext = T_exterior(t)
     if t <= InicioSubida*3600 then
         T_ext = TAmbMin;
@@ -142,11 +141,14 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
     
     
     for i=1:N,
-    // COMPLETAR METOD0 DE EULER
-    // Al finalizar el METOD0 de Euler se debe tener un Vector FILA 'T'
-    // con las temperaturas para cada tiempo en SEGUNDOS que se guarda en 
-    // el vector 't'
-    
+    tc = t(i);                                // tiempo actual (s)
+    k = f(tc, T(i), hr_ini_cal, hr_cal, hr_ini_ref, hr_ref); // derivada dT/dt
+    t = [t, tc+Dt];                           // nuevo tiempo
+    T = [T, T(i) + Dt * k];                   // Euler: T_{n+1} = T_n + Dt * k
+
+    // calculo de Qc, Qr en el instante recién creado t(i+1)
+    Qc = [Qc, Q_calef(t(i+1),hr_ini_cal,hr_cal)];
+    Qr = [Qr, Q_refri(t(i+1),hr_ini_ref,hr_ref)];
     end
     
     
