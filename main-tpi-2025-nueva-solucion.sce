@@ -123,6 +123,19 @@ function dT = f(t,T_int, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref)
     dT = Q_total(t,T_int, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref) / capacidadCalorificaEdificio;
 endfunction
 
+function integral = funcion_integral(t, Q)
+    integral = 0  // Inicializamos el acumulador de la integral
+    n = length(t)  // Obtenemos el número de puntos en el vector tiempo
+    
+    // Recorremos todos los intervalos entre puntos consecutivos
+    for i = 1:(n-1)
+        dt = t(i+1) - t(i)  // Calculamos el ancho del intervalo (base del trapecio)
+        
+        // Aplicamos la regla del trapecio: Área = (base * (altura1 + altura2)) / 2
+        // Q(i) y Q(i+1) son las alturas en los extremos del trapecio
+        integral = integral + (Q(i) + Q(i+1)) * dt / 2
+    end
+endfunction
 
 function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
 
