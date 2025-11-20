@@ -241,6 +241,19 @@ function temperatura = funcion_perfil_temperatura(X)
     // Al finalizar el METOD0 de Euler se debe tener un Vector FILA 'T'
     // con las temperaturas para cada tiempo en SEGUNDOS que se guarda en 
     // el vector 't'
+        T_actual = T(i);       // 1. Obtengo la temperatura actual del vector
+        t_actual = t(i);       // 2. Obtengo el tiempo actual
+        
+        // 3. Calculo la derivada (dT/dt)
+        // Esto me dice qué tan rápido cambia la temperatura en este instante
+        dT = f(t_actual, T_actual, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref);
+        
+        // 4. Aplico EULER: Temp Futura = Temp Actual + (Cambio * Paso de tiempo)
+        T_siguiente = T_actual + dT * Dt;
+        
+        // 5. Guardo los nuevos valores en los vectores (agregando al final de la lista)
+        T = [T, T_siguiente];
+        t = [t, t_actual + Dt];
     
     end
     
