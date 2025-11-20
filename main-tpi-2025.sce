@@ -121,6 +121,10 @@ function dT = f(t,T_int, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref)
     dT = Q_total(t,T_int, hr_ini_cal, hr_cal, hr_ini_ref, hr_ref) / capacidadCalorificaEdificio;
 endfunction
 
+// Función para calcular la integral mediante el método del trapecio
+function I = funcion_integral(t, Q)
+    I = trapz(t, Q); // Utiliza la función trapz de Scilab para calcular la integral
+endfunction
 
 function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
 
@@ -163,13 +167,13 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
 
     
     // INTEGRACION DE LA ENERGIA DE CALEFACCION A LO LARGO DEL DIA (JOULES)
-    energiaCalefaccionDiaria = 0
+    energiaCalefaccionDiaria = funcion_integral(t,Qc); 
     // Programar una funcion_integral(t,Qc), que calcule la Energía total 
     // de Calefacción mediente la integral de Qc en funcion de t // [Joules]
     
     
     // INTEGRACION DE LA ENERGIA DE REFRIGERACION A LO LARGO DEL DIA (JOULES)
-    energiaRefrigeracionDiaria = 0 // [Joules]
+    energiaRefrigeracionDiaria = funcion_integral(t,Qr);
     // Programar una funcion_integral(t,Qr), que calcule la Energía total 
     // de Refrigeración mediente la integral de Qr en funcion de t // [Joules]
     
