@@ -59,7 +59,7 @@ conductanciaPiso = superficiePiso*coeficienteConductanciaPiso // [W/K]
 
 potenciaCalefaccionUnitaria = 10 // Potencia de calefacción por metro cuadrado de superficie construida [W/m2]
 potenciaCalefaccion = potenciaCalefaccionUnitaria * superficiePiso // [W]
-EnergiaCalefaccion = 0.045/1000 // [dólares/Wh]
+precioEnergiaCalefaccion = 0.045/1000 // [dólares/Wh]
 
 // CALCULO DEL COSTO DE LA ENERGIA DE CALEFACCION
 //poderCalorificoGas = 10.8 //[kWh/m3]
