@@ -170,7 +170,20 @@ function costoClimatizacion = funcion_costo_climatizacion(X, graficar)
 
     
     // INTEGRACION DE LA ENERGIA DE CALEFACCION A LO LARGO DEL DIA (JOULES)
+    function energia_diaria = funcion_integral(t,Q)
+        
+        n = length(t) - 1;       // cantidad de subintervalos
+        h = t(2) - t(1);         // paso (36 segundos)
 
+        // Regla del trapecio compuesta
+        suma_interior = 0;
+        for i = 2:n
+            suma_interior = suma_interior + Q(i);
+        end
+
+        energia_diaria  = (h/2) * (Q(1) + 2 * suma_interior + Q(n+1));
+
+    endfunction
     
     
     
